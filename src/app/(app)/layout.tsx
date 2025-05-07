@@ -5,7 +5,6 @@ import { getCurrentUser } from '@/lib/auth';
 import type { User, NavItem } from '@/types';
 import Link from 'next/link';
 import { Home, BookOpen, Users, BarChart3, Settings, LogOut, GraduationCap, Edit3, ShieldCheck } from 'lucide-react';
-import { UserRoleSwitcher } from '@/components/layout/user-role-switcher';
 import { Button } from '@/components/ui/button';
 
 export default async function AppLayout({
@@ -88,7 +87,7 @@ export default async function AppLayout({
             {/* Potentially breadcrumbs or page title here */}
           </div>
           <div className="flex items-center gap-4">
-            <UserRoleSwitcher currentRole={user.role} />
+            {/* UserRoleSwitcher removed here */}
             <MainAppNav user={user} />
           </div>
         </header>
