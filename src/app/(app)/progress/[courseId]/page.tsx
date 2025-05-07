@@ -1,7 +1,8 @@
+
 import { getCurrentUser } from '@/lib/auth';
 import { mockCourses, mockStudentProgress } from '@/lib/mock-data';
 import type { Course, StudentProgress as StudentProgressType, AssignmentSubmission } from '@/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -175,3 +176,4 @@ function AssignmentStatusItem({ submission, courseId }: AssignmentStatusItemProp
     </Card>
   );
 }
+
