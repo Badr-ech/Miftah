@@ -47,6 +47,13 @@ export interface EnrolledCourse extends Course {
   lastAccessed?: string;
 }
 
+export interface AssignmentSubmission {
+  assignmentId: string;
+  assignmentTitle: string;
+  submittedAt?: string;
+  grade?: string;
+  status: "submitted" | "pending" | "graded" | "late";
+}
 
 export interface StudentProgress {
   courseId: string;
@@ -54,13 +61,7 @@ export interface StudentProgress {
   completedAssignments: number;
   totalAssignments: number;
   overallGrade?: string; 
-  assignmentSubmissions?: {
-    assignmentId: string;
-    assignmentTitle: string;
-    submittedAt?: string;
-    grade?: string;
-    status: "submitted" | "pending" | "graded" | "late";
-  }[];
+  assignmentSubmissions?: AssignmentSubmission[];
 }
 
 // For navigation items in sidebar
