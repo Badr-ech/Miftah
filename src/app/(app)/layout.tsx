@@ -1,10 +1,11 @@
+
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MainAppNav } from '@/components/layout/main-app-nav';
 import { getCurrentUser } from '@/lib/auth';
 import type { User, NavItem } from '@/types';
 import Link from 'next/link';
-import { Home, BookOpen, Users, BarChart3, Settings, LogOut, GraduationCap, Edit3, ShieldCheck } from 'lucide-react';
+import { Home, BookOpen, Users, BarChart3, Settings, LogOut, GraduationCap, Edit3, ShieldCheck, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggleButton } from '@/components/layout/theme-toggle-button';
 
@@ -58,7 +59,7 @@ export default async function AppLayout({
         <div className="mt-auto p-4 border-t border-sidebar-border group-data-[collapsible=icon]:p-2">
            <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={user.avatarUrl} alt={user.name} />
+              <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="user avatar" />
               <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="group-data-[collapsible=icon]:hidden">
@@ -108,6 +109,7 @@ function getNavItems(role: User['role']): NavItem[] {
 
   const studentItems: NavItem[] = [
     { title: 'My Progress', href: '/progress', icon: BarChart3, roles: ['student'] },
+    { title: 'Study Plan', href: '/study-plan', icon: ClipboardList, roles: ['student'] },
   ];
 
   const teacherItems: NavItem[] = [
