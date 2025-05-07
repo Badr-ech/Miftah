@@ -12,7 +12,7 @@ export default function LogoutPage() {
 
   useEffect(() => {
     const handleLogout = async () => {
-      await performLogout();
+      await performLogout(); // This is now async
       toast({
         title: 'Logged Out',
         description: 'You have been successfully logged out.',

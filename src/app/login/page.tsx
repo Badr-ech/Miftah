@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +17,13 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const [bgImage, setBgImage] = useState('');
+
+  useEffect(() => {
+    // Generate a random image URL on client mount to avoid hydration mismatch
+    setBgImage(`https://picsum.photos/seed/login-bg-${Math.random()}/1920/1080`);
+  }, []);
+
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -42,16 +49,17 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
-       <div className="absolute inset-0 -z-10">
+       {bgImage && <div className="absolute inset-0 -z-10">
         <Image 
-          src="https://picsum.photos/seed/login-bg/1920/1080" 
+          src={bgImage}
           alt="Abstract background" 
           layout="fill" 
           objectFit="cover"
           data-ai-hint="abstract background"
           className="opacity-20"
+          priority // Ensure image loads faster
         />
-      </div>
+      </div>}
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
           <div className="inline-block mx-auto mb-4 p-3 bg-primary/10 rounded-full">

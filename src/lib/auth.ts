@@ -1,8 +1,8 @@
 import type { User, UserRole } from '@/types';
 
-// In a real app, this would involve checking a session, token, etc.
-// For now, we'll cycle through roles or allow setting via localStorage for demo.
-
+// This variable is module-scoped.
+// Server instances of this module will have their own `currentUserRole`.
+// Client instances will have theirs.
 let currentUserRole: UserRole = 'student'; // Default role
 
 const mockUsers: Record<UserRole, User> = {
@@ -30,48 +30,71 @@ const mockUsers: Record<UserRole, User> = {
 };
 
 export async function getCurrentUser(): Promise<User | null> {
-  // Simulate fetching user data
-  // In a real app, you might get role from localStorage for demo purposes
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined') { // Client-side
     const storedRole = localStorage.getItem('currentUserRole') as UserRole | null;
     if (storedRole && mockUsers[storedRole]) {
+      if (currentUserRole !== storedRole) {
+        currentUserRole = storedRole; // Sync client-side module variable
+      }
       return mockUsers[storedRole];
     }
+    // If localStorage is empty, use the current client-side module variable
+    return mockUsers[currentUserRole];
   }
+  // Server-side: Uses the module-scoped `currentUserRole`, hopefully updated by a server action.
   return mockUsers[currentUserRole];
 }
 
-export function setCurrentUserRole(role: UserRole) {
-  currentUserRole = role;
+// Called by server actions to update the role in the server's module scope.
+export function setServerSideUserRole(newRole: UserRole): void {
+  currentUserRole = newRole;
+}
+
+// Called from client components (login page, UserRoleSwitcher)
+// Updates client state and calls a server action to update server state.
+export async function setCurrentUserRole(newRole: UserRole): Promise<void> {
+  // Update client-side module variable
+  currentUserRole = newRole;
+
+  // Update localStorage
   if (typeof window !== 'undefined') {
-    localStorage.setItem('currentUserRole', role);
+    localStorage.setItem('currentUserRole', newRole);
+  }
+
+  // Call server action to update server's understanding of the role
+  try {
+    // Dynamically import the server action module
+    const authActions = await import('@/lib/authActions');
+    await authActions.updateUserRoleOnServer(newRole);
+  } catch (error) {
+    console.error("Failed to update role on server via action:", error);
+    // Decide how to handle this error. For a mock, we might proceed,
+    // knowing server state might be out of sync.
   }
 }
 
-// Helper to simulate login
 export async function login(role: UserRole): Promise<User> {
-  setCurrentUserRole(role);
-  const user = await getCurrentUser();
+  await setCurrentUserRole(role);
+  // getCurrentUser will be called on the client after login actions complete.
+  // It should pick up the role from client-side currentUserRole or localStorage.
+  const user = await getCurrentUser(); 
   if (!user) throw new Error("Login failed: User not found for role.");
   return user;
 }
 
-// Helper to simulate logout
-export async function logout() {
+export async function logout(): Promise<void> {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('currentUserRole');
   }
   // Reset to a default or handle redirection
   // For now, just clears the role. A real app would clear session/token.
+  // Call setCurrentUserRole to update both client and server state to default 'student'
+  await setCurrentUserRole('student'); 
 }
 
 // This function is to be used in Server Components
 // It can't rely on localStorage directly.
-// For a real app, this would involve cookies or server-side session management.
-// For this mock, we'll keep it simple. A real implementation would differ significantly.
+// It relies on the server-side module-scoped `currentUserRole`.
 export async function getSessionUser(): Promise<User | null> {
-  // This is a placeholder. In a real app with server components,
-  // you'd verify a session cookie or similar.
-  // For now, it just returns the currently set mock user.
   return mockUsers[currentUserRole];
 }

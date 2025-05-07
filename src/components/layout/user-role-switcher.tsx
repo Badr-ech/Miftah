@@ -1,3 +1,4 @@
+// src/components/layout/user-role-switcher.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -21,18 +22,20 @@ export function UserRoleSwitcher({ currentRole }: UserRoleSwitcherProps) {
   const [selectedRole, setSelectedRole] = useState<UserRole>(currentRole);
   const router = useRouter();
 
-  // Sync with localStorage on client mount
+  // Sync with localStorage and props on client mount/update
   useEffect(() => {
     const storedRole = localStorage.getItem('currentUserRole') as UserRole | null;
     if (storedRole) {
       setSelectedRole(storedRole);
+    } else {
+      setSelectedRole(currentRole); // Fallback to prop if nothing in localStorage
     }
-  }, []);
+  }, [currentRole]);
 
-  const handleRoleChange = (newRole: UserRole) => {
+  const handleRoleChange = async (newRole: UserRole) => {
     setSelectedRole(newRole);
-    setRoleInAuth(newRole); // Update auth mock
-    localStorage.setItem('currentUserRole', newRole); // Persist for demo
+    await setRoleInAuth(newRole); // Update auth (client & server via action)
+    // localStorage.setItem('currentUserRole', newRole); // setRoleInAuth handles this
     router.refresh(); // Re-fetch server components with new role
   };
 
