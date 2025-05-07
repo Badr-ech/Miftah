@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { GeistSans } from 'next/font/google';
-import { GeistMono } from 'next/font/google';
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
