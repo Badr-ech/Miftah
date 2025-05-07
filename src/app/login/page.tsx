@@ -43,6 +43,7 @@ export default function LoginPage() {
         description: (error as Error).message || 'An unexpected error occurred.',
         variant: 'destructive',
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -53,11 +54,10 @@ export default function LoginPage() {
         <Image 
           src={bgImage}
           alt="Abstract background" 
-          layout="fill" 
-          objectFit="cover"
+          fill
           data-ai-hint="abstract background"
-          className="opacity-20"
-          priority // Ensure image loads faster
+          className="opacity-20 object-cover"
+          priority 
         />
       </div>}
       <Card className="w-full max-w-md shadow-2xl">

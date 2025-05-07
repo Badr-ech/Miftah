@@ -6,6 +6,7 @@ import type { User, NavItem } from '@/types';
 import Link from 'next/link';
 import { Home, BookOpen, Users, BarChart3, Settings, LogOut, GraduationCap, Edit3, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ThemeToggleButton } from '@/components/layout/theme-toggle-button';
 
 export default async function AppLayout({
   children,
@@ -87,7 +88,7 @@ export default async function AppLayout({
             {/* Potentially breadcrumbs or page title here */}
           </div>
           <div className="flex items-center gap-4">
-            {/* UserRoleSwitcher removed here */}
+            <ThemeToggleButton />
             <MainAppNav user={user} />
           </div>
         </header>
