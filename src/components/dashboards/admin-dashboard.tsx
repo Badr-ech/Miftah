@@ -1,3 +1,5 @@
+'use client';
+
 import type { User } from '@/types';
 import { mockUsers, mockCourses } from '@/lib/mock-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
