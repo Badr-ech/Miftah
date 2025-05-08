@@ -9,8 +9,13 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export default async function DashboardPage() {
-  // Using the server-side function instead of getCurrentUser
   const user = await getServerUser();
+  // Log the user object details as received by the dashboard page
+  if (user) {
+    console.log(`[DashboardPage] Rendering dashboard for user: ${user.name}, role: ${user.role}`);
+  } else {
+    console.error("[DashboardPage] User object is null or undefined.");
+  }
 
   if (!user) {
     return (

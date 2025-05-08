@@ -2,44 +2,54 @@
 
 import type { User, UserRole } from '@/types';
 import { cookies } from 'next/headers';
-import { mockUsers } from './auth';
+// Ensure this path is correct and mockUsers is the Record<UserRole, User> map
+import { mockUsers as roleToUserMap } from './auth'; 
 
-// This is for server-side only authentication functions
-
-// Get the user role from cookies
 export async function getUserRoleFromCookies(): Promise<UserRole | null> {
   try {
     const cookieStore = cookies();
     const roleCookie = cookieStore.get('userRole');
-    return roleCookie?.value as UserRole || null;
+    console.log(`[server-auth] getUserRoleFromCookies: Raw cookie value is '${roleCookie?.value}'`);
+    
+    // Validate the role value
+    if (roleCookie && (roleCookie.value === 'student' || roleCookie.value === 'teacher' || roleCookie.value === 'admin')) {
+        return roleCookie.value as UserRole;
+    }
+    if (roleCookie) {
+        console.warn(`[server-auth] getUserRoleFromCookies: Invalid role value in cookie: '${roleCookie.value}'`);
+    }
+    return null;
   } catch (error) {
-    console.error("Error getting user role from cookies:", error);
+    console.error("[server-auth] Error getting user role from cookies:", error);
     return null;
   }
 }
 
-// Set user role in cookies
 export async function setUserRoleCookie(role: UserRole): Promise<void> {
   try {
     const cookieStore = cookies();
     cookieStore.set('userRole', role, { 
       path: '/',
-      maxAge: 60 * 60 * 24, // 1 day
-      httpOnly: true, // Make cookie httpOnly
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      httpOnly: true, 
       sameSite: 'strict',
-      secure: process.env.NODE_ENV === 'production', // Set secure flag in production
+      secure: process.env.NODE_ENV === 'production', 
     });
+    console.log(`[server-auth] setUserRoleCookie: Set userRole cookie to '${role}'`);
   } catch (error) {
-    console.error("Error setting user role cookie:", error);
+    console.error("[server-auth] Error setting user role cookie:", error);
   }
 }
 
-// Get server-side user
 export async function getServerUser(): Promise<User | null> {
   const role = await getUserRoleFromCookies();
-  if (role && mockUsers[role]) {
-    return mockUsers[role];
+  console.log(`[server-auth] getServerUser: Role determined from cookies is '${role}'`);
+  
+  if (role && roleToUserMap[role]) {
+    console.log(`[server-auth] getServerUser: Successfully found user '${roleToUserMap[role].name}' for role '${role}'.`);
+    return roleToUserMap[role];
   }
-  // Default fallback if role not found or invalid
-  return mockUsers.student; 
+  
+  console.warn(`[server-auth] getServerUser: Role '${role}' not found in roleToUserMap or role is null. Defaulting to student user.`);
+  return roleToUserMap.student; 
 }

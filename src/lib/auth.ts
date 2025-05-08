@@ -1,9 +1,8 @@
 import type { User, UserRole } from '@/types';
 
-// This variable is module-scoped.
-// Server instances of this module will have their own `currentUserRole`.
-// Client instances will have theirs.
-let currentUserRole: UserRole = 'student'; // Default role
+// This variable is module-scoped for client-side immediate use,
+// but server-side relies on cookies via server-auth.
+let clientSideCurrentUserRole: UserRole = 'student'; 
 
 export const mockUsers: Record<UserRole, User> = {
   student: {
@@ -33,54 +32,71 @@ export async function getCurrentUser(): Promise<User | null> {
   if (typeof window !== 'undefined') { // Client-side
     const storedRole = localStorage.getItem('currentUserRole') as UserRole | null;
     if (storedRole && mockUsers[storedRole]) {
-      if (currentUserRole !== storedRole) {
-        currentUserRole = storedRole; // Sync client-side module variable
-      }
+      clientSideCurrentUserRole = storedRole; // Sync client-side module variable
+      // console.log(`[auth.ts] getCurrentUser (client): Role from localStorage: '${storedRole}'`);
       return mockUsers[storedRole];
     }
-    // If localStorage is empty, use the current client-side module variable
-    return mockUsers[currentUserRole];
+    // If localStorage is empty, use the current client-side module variable, then update localStorage
+    // console.log(`[auth.ts] getCurrentUser (client): Role from module-scope: '${clientSideCurrentUserRole}', updating localStorage.`);
+    localStorage.setItem('currentUserRole', clientSideCurrentUserRole);
+    return mockUsers[clientSideCurrentUserRole];
   }
   
-  // Server-side fallback - This path is taken when Server Components like AppLayout call it.
-  // It uses the module-scoped `currentUserRole` which defaults to 'student'.
-  // This `currentUserRole` is NOT updated by cookies on the server for this specific function.
-  return mockUsers[currentUserRole];
+  // Server-side: Delegate to the cookie-based method
+  try {
+    // console.log("[auth.ts] getCurrentUser (server): Delegating to server-auth.getServerUser().");
+    const { getServerUser: getSrvUser } = await import('@/lib/server-auth');
+    return await getSrvUser();
+  } catch (e) {
+    console.error("[auth.ts] getCurrentUser (server path): Error importing/using getServerUser:", e);
+    console.warn(`[auth.ts] getCurrentUser (server path): Fallback to default student due to error.`);
+    return mockUsers.student; // Fallback to default student on error.
+  }
 }
 
 // Called from client components (login page)
 export async function setCurrentUserRole(newRole: UserRole): Promise<void> {
-  // Update client-side module variable
-  currentUserRole = newRole;
+  clientSideCurrentUserRole = newRole; // Update client-side module variable for immediate consistency if needed.
 
-  // Update localStorage for client-side state
   if (typeof window !== 'undefined') {
     localStorage.setItem('currentUserRole', newRole);
+    console.log(`[auth.ts] setCurrentUserRole (client): Set localStorage role to '${newRole}'`);
   }
 
-  // Call server action to update server's httpOnly cookie
   try {
-    // Dynamically import the server action module
+    console.log(`[auth.ts] setCurrentUserRole: Calling server action to update role to '${newRole}'.`);
     const authActions = await import('@/lib/authActions');
     await authActions.updateUserRoleOnServer(newRole);
+    console.log(`[auth.ts] setCurrentUserRole: Server action completed for role '${newRole}'.`);
   } catch (error) {
-    console.error("Failed to update role on server via action:", error);
+    console.error("[auth.ts] setCurrentUserRole: Failed to update role on server via action:", error);
+    // Depending on app requirements, this might be a critical error.
   }
 }
 
 export async function login(role: UserRole): Promise<User> {
-  await setCurrentUserRole(role);
-  const user = await getCurrentUser(); 
-  if (!user) throw new Error("Login failed: User not found for role.");
-  return user;
+  console.log(`[auth.ts] login: Initiating login for role '${role}'.`);
+  await setCurrentUserRole(role); // This sets localStorage and triggers server cookie update.
+  
+  // For client-side, directly return the user based on the selected role for immediate UI update.
+  // Server components will re-render based on the cookie after router.refresh().
+  const userForClient = mockUsers[role]; 
+  
+  if (!userForClient) {
+    console.error(`[auth.ts] login: User not found for role '${role}' in mockUsers map.`);
+    throw new Error(`Login failed: User mapping for role '${role}' not found.`);
+  }
+  console.log(`[auth.ts] login: Login process initiated for '${userForClient.name}' (Role: ${userForClient.role}). Client page should refresh.`);
+  return userForClient;
 }
 
 export async function logout(): Promise<void> {
+  console.log("[auth.ts] logout: Initiating logout.");
   if (typeof window !== 'undefined') {
-    // Clear localStorage
     localStorage.removeItem('currentUserRole');
+    console.log("[auth.ts] logout (client): Removed currentUserRole from localStorage.");
   }
-  
-  // Reset to default role 'student' and update server-side httpOnly cookie via server action
-  await setCurrentUserRole('student');
+  // Reset role to 'student' and update server-side httpOnly cookie via server action.
+  await setCurrentUserRole('student'); 
+  console.log("[auth.ts] logout: Role reset to 'student'. Server cookie update initiated.");
 }
