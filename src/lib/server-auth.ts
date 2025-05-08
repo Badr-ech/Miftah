@@ -9,7 +9,7 @@ import { mockUsers } from './auth';
 // Get the user role from cookies
 export async function getUserRoleFromCookies(): Promise<UserRole | null> {
   try {
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const roleCookie = cookieStore.get('userRole');
     return roleCookie?.value as UserRole || null;
   } catch (error) {
@@ -21,12 +21,13 @@ export async function getUserRoleFromCookies(): Promise<UserRole | null> {
 // Set user role in cookies
 export async function setUserRoleCookie(role: UserRole): Promise<void> {
   try {
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     cookieStore.set('userRole', role, { 
       path: '/',
       maxAge: 60 * 60 * 24, // 1 day
-      httpOnly: false,
-      sameSite: 'strict'
+      httpOnly: true, // Make cookie httpOnly
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production', // Set secure flag in production
     });
   } catch (error) {
     console.error("Error setting user role cookie:", error);
@@ -39,5 +40,6 @@ export async function getServerUser(): Promise<User | null> {
   if (role && mockUsers[role]) {
     return mockUsers[role];
   }
-  return mockUsers.student; // Default fallback
+  // Default fallback if role not found or invalid
+  return mockUsers.student; 
 }

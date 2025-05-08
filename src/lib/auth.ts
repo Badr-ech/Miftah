@@ -42,24 +42,23 @@ export async function getCurrentUser(): Promise<User | null> {
     return mockUsers[currentUserRole];
   }
   
-  // Server-side fallback - safer to return the default
-  return mockUsers.student;
+  // Server-side fallback - This path is taken when Server Components like AppLayout call it.
+  // It uses the module-scoped `currentUserRole` which defaults to 'student'.
+  // This `currentUserRole` is NOT updated by cookies on the server for this specific function.
+  return mockUsers[currentUserRole];
 }
 
-// Called from client components (login page, UserRoleSwitcher)
+// Called from client components (login page)
 export async function setCurrentUserRole(newRole: UserRole): Promise<void> {
   // Update client-side module variable
   currentUserRole = newRole;
 
-  // Update localStorage
+  // Update localStorage for client-side state
   if (typeof window !== 'undefined') {
     localStorage.setItem('currentUserRole', newRole);
-    
-    // Also update in document.cookie for better cross-request consistency
-    document.cookie = `userRole=${newRole};path=/;max-age=${60*60*24};SameSite=Strict`;
   }
 
-  // Call server action to update server's understanding of the role
+  // Call server action to update server's httpOnly cookie
   try {
     // Dynamically import the server action module
     const authActions = await import('@/lib/authActions');
@@ -71,8 +70,6 @@ export async function setCurrentUserRole(newRole: UserRole): Promise<void> {
 
 export async function login(role: UserRole): Promise<User> {
   await setCurrentUserRole(role);
-  // getCurrentUser will be called on the client after login actions complete.
-  // It should pick up the role from client-side currentUserRole or localStorage.
   const user = await getCurrentUser(); 
   if (!user) throw new Error("Login failed: User not found for role.");
   return user;
@@ -82,11 +79,8 @@ export async function logout(): Promise<void> {
   if (typeof window !== 'undefined') {
     // Clear localStorage
     localStorage.removeItem('currentUserRole');
-    
-    // Clear the cookie by setting an expired date
-    document.cookie = 'userRole=; path=/; max-age=0; SameSite=Strict';
   }
   
-  // Reset to default and update server state
+  // Reset to default role 'student' and update server-side httpOnly cookie via server action
   await setCurrentUserRole('student');
 }
