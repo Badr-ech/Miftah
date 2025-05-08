@@ -11,7 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const GenerateStudyPlanInputSchema = z.object({
+const GenerateStudyPlanInputSchema = z.object({
   learningGoals: z
     .string()
     .min(10, { message: "Please describe your learning goals in at least 10 characters." })
@@ -43,7 +43,7 @@ export const GenerateStudyPlanInputSchema = z.object({
 });
 export type GenerateStudyPlanInput = z.infer<typeof GenerateStudyPlanInputSchema>;
 
-export const GenerateStudyPlanOutputSchema = z.object({
+const GenerateStudyPlanOutputSchema = z.object({
   planTitle: z.string().describe("A concise and motivating title for the study plan."),
   introduction: z.string().describe("A brief introductory message or overview of the plan, tailored to the student's goals."),
   weeklyBreakdown: z.array(z.object({
@@ -116,3 +116,4 @@ const generateStudyPlanFlow = ai.defineFlow(
     return output;
   }
 );
+
