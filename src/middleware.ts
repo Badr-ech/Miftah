@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getSessionUser } from '@/lib/auth'; // This needs to be adapted for server-side context
+import { getServerUser } from '@/lib/server-auth'; // Updated import to use server-auth
 
 // This is a simplified middleware. A real app would use a robust session management library.
 export async function middleware(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
   // We'd typically check a session cookie here.
   // Let's simulate this by using a header or a simplified check if possible,
   // or assume that if not public, it requires auth.
-  // `getSessionUser` is a placeholder for a server-side compatible auth check.
+  // `getServerUser` is a placeholder for a server-side compatible auth check.
   
   // A more robust check would be:
   // const session = await getIronSession(request, sessionOptions); // Example using iron-session
@@ -27,10 +27,10 @@ export async function middleware(request: NextRequest) {
   // Simplified check for demo:
   // If there's no specific "public" route, assume auth is required.
   // This part is highly dependent on how auth is truly implemented.
-  // For now, we'll assume `getSessionUser` can be called, understanding it's a mock.
+  // For now, we'll assume `getServerUser` can be called, understanding it's a mock.
   // In a real app, this would be an actual server-side session check.
 
-  // The current `getSessionUser` is a mock that depends on a global variable.
+  // The current `getServerUser` is a mock that depends on a global variable.
   // This is NOT suitable for production but serves the demo.
   // A real middleware would parse a secure, httpOnly cookie.
   
@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
   // This is not ideal but necessary given the limitations of the mock auth.
 
   // If you want to enforce redirection:
-  // const user = await getSessionUser(); // This is a mock, remember.
+  // const user = await getServerUser(); // This is a mock, remember.
   // if (!user && !publicPaths.includes(pathname)) {
   //    console.log(`Middleware: No user found for ${pathname}, redirecting to /login`);
   //    return NextResponse.redirect(new URL('/login?redirectedFrom=${pathname}', request.url));
