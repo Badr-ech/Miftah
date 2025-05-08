@@ -1,4 +1,4 @@
-import { getCurrentUser } from '@/lib/auth';
+import { getServerUser } from '@/lib/server-auth';
 import { StudentDashboard } from '@/components/dashboards/student-dashboard';
 import { TeacherDashboard } from '@/components/dashboards/teacher-dashboard';
 import { AdminDashboard } from '@/components/dashboards/admin-dashboard';
@@ -9,7 +9,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export default async function DashboardPage() {
-  const user = await getCurrentUser();
+  // Using the server-side function instead of getCurrentUser
+  const user = await getServerUser();
 
   if (!user) {
     return (
