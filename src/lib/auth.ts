@@ -1,4 +1,5 @@
 import type { User, UserRole } from '@/types';
+import { cookies } from 'next/headers';
 
 // This variable is module-scoped.
 // Server instances of this module will have their own `currentUserRole`.
@@ -41,13 +42,46 @@ export async function getCurrentUser(): Promise<User | null> {
     // If localStorage is empty, use the current client-side module variable
     return mockUsers[currentUserRole];
   }
-  // Server-side: Uses the module-scoped `currentUserRole`, hopefully updated by a server action.
+  
+  // Server-side: Check for role in cookies first
+  try {
+    const cookieStore = cookies();
+    const roleCookie = cookieStore.get('userRole');
+    const roleFromCookie = roleCookie?.value as UserRole;
+    
+    if (roleFromCookie && mockUsers[roleFromCookie]) {
+      if (currentUserRole !== roleFromCookie) {
+        currentUserRole = roleFromCookie; // Update server-side module variable
+      }
+      return mockUsers[roleFromCookie];
+    }
+  } catch (error) {
+    // If cookies() fails (e.g., in middleware), fall back to module-scoped variable
+    console.log("Couldn't access cookies, falling back to module variable");
+  }
+  
+  // Fall back to module-scoped variable
   return mockUsers[currentUserRole];
 }
 
 // Called by server actions to update the role in the server's module scope.
 export function setServerSideUserRole(newRole: UserRole): void {
   currentUserRole = newRole;
+  
+  // Also update in cookies for better server-side consistency
+  try {
+    const cookieStore = cookies();
+    // Set the cookie with HttpOnly: false so client JavaScript can read it too
+    cookieStore.set('userRole', newRole, { 
+      path: '/',
+      maxAge: 60 * 60 * 24, // 1 day
+      httpOnly: false,
+      sameSite: 'strict'
+    });
+  } catch (error) {
+    console.error("Failed to set cookie in server action:", error);
+    // Continue anyway - the module-scoped variable was still updated
+  }
 }
 
 // Called from client components (login page, UserRoleSwitcher)
@@ -59,6 +93,9 @@ export async function setCurrentUserRole(newRole: UserRole): Promise<void> {
   // Update localStorage
   if (typeof window !== 'undefined') {
     localStorage.setItem('currentUserRole', newRole);
+    
+    // Also update in document.cookie for better cross-request consistency
+    document.cookie = `userRole=${newRole};path=/;max-age=${60*60*24};SameSite=Strict`;
   }
 
   // Call server action to update server's understanding of the role
@@ -84,17 +121,36 @@ export async function login(role: UserRole): Promise<User> {
 
 export async function logout(): Promise<void> {
   if (typeof window !== 'undefined') {
+    // Clear localStorage
     localStorage.removeItem('currentUserRole');
+    
+    // Clear the cookie by setting an expired date
+    document.cookie = 'userRole=; path=/; max-age=0; SameSite=Strict';
   }
-  // Reset to a default or handle redirection
-  // For now, just clears the role. A real app would clear session/token.
-  // Call setCurrentUserRole to update both client and server state to default 'student'
-  await setCurrentUserRole('student'); 
+  
+  // Reset to default and update server state
+  await setCurrentUserRole('student');
 }
 
 // This function is to be used in Server Components
-// It can't rely on localStorage directly.
-// It relies on the server-side module-scoped `currentUserRole`.
+// It needs to check cookies first for consistency
 export async function getSessionUser(): Promise<User | null> {
+  try {
+    const cookieStore = cookies();
+    const roleCookie = cookieStore.get('userRole');
+    const roleFromCookie = roleCookie?.value as UserRole | undefined;
+    
+    if (roleFromCookie && mockUsers[roleFromCookie]) {
+      // Sync the module variable with the cookie value for consistency
+      if (currentUserRole !== roleFromCookie) {
+        currentUserRole = roleFromCookie;
+      }
+      return mockUsers[roleFromCookie];
+    }
+  } catch (error) {
+    console.log("Couldn't access cookies in getSessionUser, falling back to module variable");
+  }
+  
+  // Fall back to module-scoped variable
   return mockUsers[currentUserRole];
 }
