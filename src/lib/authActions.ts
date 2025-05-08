@@ -11,7 +11,7 @@ export async function updateUserRoleOnServer(role: UserRole): Promise<void> {
     setServerSideUserRole(role);
     
     // Directly update cookie to ensure consistency across server requests
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.set('userRole', role, { 
       path: '/',
       maxAge: 60 * 60 * 24, // 1 day

@@ -45,7 +45,7 @@ export async function getCurrentUser(): Promise<User | null> {
   
   // Server-side: Check for role in cookies first
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const roleCookie = cookieStore.get('userRole');
     const roleFromCookie = roleCookie?.value as UserRole;
     
@@ -65,12 +65,12 @@ export async function getCurrentUser(): Promise<User | null> {
 }
 
 // Called by server actions to update the role in the server's module scope.
-export function setServerSideUserRole(newRole: UserRole): void {
+export async function setServerSideUserRole(newRole: UserRole): Promise<void> {
   currentUserRole = newRole;
   
   // Also update in cookies for better server-side consistency
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     // Set the cookie with HttpOnly: false so client JavaScript can read it too
     cookieStore.set('userRole', newRole, { 
       path: '/',
@@ -136,7 +136,7 @@ export async function logout(): Promise<void> {
 // It needs to check cookies first for consistency
 export async function getSessionUser(): Promise<User | null> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const roleCookie = cookieStore.get('userRole');
     const roleFromCookie = roleCookie?.value as UserRole | undefined;
     
