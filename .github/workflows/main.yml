@@ -94,9 +94,7 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GOOGLEAI_API_KEY: ${{ secrets.GOOGLEAI_API_KEY }}
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-          GENKIT_API_KEY: ${{ secrets.GENKIT_API_KEY }}
-
-      - name: Deploy to Vercel
+          GENKIT_API_KEY: ${{ secrets.GENKIT_API_KEY }}      - name: Deploy to Vercel
         id: deploy-vercel
         uses: amondnet/vercel-action@v25  # Updated to v25
         with:
@@ -105,3 +103,43 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: ./
           vercel-args: '--prod'
+          
+      - name: Cleanup old deployments
+        if: success()
+        run: |
+          # Install jq for JSON parsing
+          sudo apt-get update && sudo apt-get install -y jq
+          
+          # Get list of deployments
+          echo "Fetching deployment list from Vercel..."
+          DEPLOYMENTS=$(curl -s -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            "https://api.vercel.com/v6/deployments?projectId=${{ secrets.VERCEL_PROJECT_ID }}&teamId=${{ secrets.VERCEL_ORG_ID }}")
+          
+          # Extract latest deployment ID (current deployment)
+          LATEST_DEPLOYMENT_ID=$(echo $DEPLOYMENTS | jq -r '.deployments[0].uid')
+          echo "Latest deployment: $LATEST_DEPLOYMENT_ID - Keeping this one"
+          
+          # Count total deployments
+          TOTAL_DEPLOYMENTS=$(echo $DEPLOYMENTS | jq -r '.deployments | length')
+          echo "Total deployments found: $TOTAL_DEPLOYMENTS"
+          
+          # Loop through older deployments (skip the first one which is the latest)
+          echo "Starting cleanup of older deployments..."
+          echo $DEPLOYMENTS | jq -c '.deployments[1:] | .[]' | while read -r deployment; do
+            DEPLOYMENT_ID=$(echo $deployment | jq -r '.uid')
+            DEPLOYMENT_URL=$(echo $deployment | jq -r '.url')
+            echo "Removing old deployment: $DEPLOYMENT_ID ($DEPLOYMENT_URL)"
+            
+            # Delete the deployment
+            DELETE_RESPONSE=$(curl -s -X DELETE -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+              "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID?teamId=${{ secrets.VERCEL_ORG_ID }}")
+            
+            if echo "$DELETE_RESPONSE" | jq -e '.error' > /dev/null; then
+              ERROR_MESSAGE=$(echo "$DELETE_RESPONSE" | jq -r '.error.message')
+              echo "Error deleting deployment $DEPLOYMENT_ID: $ERROR_MESSAGE"
+            else
+              echo "Successfully deleted deployment $DEPLOYMENT_ID"
+            fi
+          done
+          
+          echo "Deployment cleanup completed. Only the latest deployment remains."
