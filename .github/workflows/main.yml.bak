@@ -1,4 +1,4 @@
-﻿name: Miftah CI/CD Pipeline
+name: Miftah CI/CD Pipeline
 
 on:
   push:
@@ -85,8 +85,7 @@ jobs:
           key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
-          
-      - name: Build
+            - name: Build
         run: npm run build
         env:
           # Use actual secrets for production deployment
