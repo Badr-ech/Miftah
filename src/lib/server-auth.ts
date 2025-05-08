@@ -7,7 +7,8 @@ import { mockUsers as roleToUserMap } from './auth';
 
 export async function getUserRoleFromCookies(): Promise<UserRole | null> {
   try {
-    const cookieStore = cookies();
+    // Get cookie store - cookies() returns a Promise in Next.js
+    const cookieStore = await cookies();
     const roleCookie = cookieStore.get('userRole');
     console.log(`[server-auth] getUserRoleFromCookies: Raw cookie value is '${roleCookie?.value}'`);
     
@@ -27,12 +28,13 @@ export async function getUserRoleFromCookies(): Promise<UserRole | null> {
 
 export async function setUserRoleCookie(role: UserRole): Promise<void> {
   try {
-    const cookieStore = cookies();
+    // Get cookie store - cookies() returns a Promise in Next.js
+    const cookieStore = await cookies();
     cookieStore.set('userRole', role, { 
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       httpOnly: true, 
-      sameSite: 'strict',
+      sameSite: 'lax', // Changed from 'strict' to 'lax' for consistency
       secure: process.env.NODE_ENV === 'production', 
     });
     console.log(`[server-auth] setUserRoleCookie: Set userRole cookie to '${role}'`);
