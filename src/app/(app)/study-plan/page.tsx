@@ -5,7 +5,8 @@ import type { NextPage } from 'next';
 import { useState, type ReactNode } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { GenerateStudyPlanInputSchema, type GenerateStudyPlanInput, type GenerateStudyPlanOutput, generateStudyPlan } from '@/ai/flows/generate-study-plan-flow';
+import { GenerateStudyPlanInputSchema, type GenerateStudyPlanInput, type GenerateStudyPlanOutput } from '@/ai/schemas/study-plan-schemas';
+import { generateStudyPlan } from '@/ai/flows/generate-study-plan-flow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -317,4 +318,3 @@ const StudyPlanPage: NextPage = () => {
 };
 
 export default StudyPlanPage;
-
