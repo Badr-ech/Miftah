@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4  # Updated to v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4  # Updated to v4
         with:
           node-version: '20'
           cache: 'npm'
@@ -23,30 +23,82 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Restore Next.js cache if available
+      - name: Restore Next.js cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
       - name: Lint
-        run: npm run lint
+        run: npm run lint -- --max-warnings=0
+        env:
+          ESLINT_ARGS: "--cache --format=compact"
 
       - name: Type check
         run: npm run typecheck
 
+      # Add environment variables with default values for CI
       - name: Build
         run: npm run build
         env:
-          # Add dummy environment variables for build
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY || 'dummy-key-for-ci' }}
-          GOOGLEAI_API_KEY: ${{ secrets.GOOGLEAI_API_KEY || 'dummy-key-for-ci' }}
+          # Set safer defaults for CI environment
+          NODE_ENV: production
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY != '' && secrets.GOOGLE_API_KEY || 'dummy-key-for-ci' }}
+          GOOGLEAI_API_KEY: ${{ secrets.GOOGLEAI_API_KEY != '' && secrets.GOOGLEAI_API_KEY || 'dummy-key-for-ci' }}
+          # Add any other required environment variables for the build
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL != '' && secrets.NEXT_PUBLIC_API_URL || 'https://api-staging.example.com' }}
+          GENKIT_API_KEY: ${{ secrets.GENKIT_API_KEY != '' && secrets.GENKIT_API_KEY || 'dummy-key-for-ci' }}
 
   deploy:
     needs: build-and-test
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
+    
+    # Add environment for deployment
+    environment:
+      name: production
+      url: ${{ steps.deploy-vercel.outputs.preview-url }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4  # Updated to v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4  # Updated to v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      # Restore Next.js cache if available
+      - name: Restore Next.js cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+          
+      - name: Build
+        run: npm run build
+        env:
+          # Use actual secrets for production deployment
+          NODE_ENV: production
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLEAI_API_KEY: ${{ secrets.GOOGLEAI_API_KEY }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          GENKIT_API_KEY: ${{ secrets.GENKIT_API_KEY }}
 
       - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v20
+        id: deploy-vercel
+        uses: amondnet/vercel-action@v25  # Updated to v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
