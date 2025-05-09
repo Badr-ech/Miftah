@@ -37,7 +37,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -93,7 +93,7 @@ jobs:
           GENKIT_API_KEY: dummy-key-for-ci
           DATABASE_URL: mongodb://localhost:27017/miftah_test
 
-  # Deploy to production 
+  # Deploy to production (add this as needed)
   deploy:
     needs: build-and-test
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')

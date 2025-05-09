@@ -46,46 +46,26 @@ jobs:
       # Generate Prisma client
       - name: Generate Prisma Client
         run: npx prisma generate
-      
-      # Enable the uuid-ossp extension before doing any database operations
-      - name: Enable uuid-ossp extension and initialize database
-        run: |
-            # Create extension
-            psql -h localhost -U postgres -d miftah_test -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
-            # Verify extension is working
-            psql -h localhost -U postgres -d miftah_test -c "SELECT uuid_generate_v4();"
-            # Create schema explicitly to ensure extension is available
-            psql -h localhost -U postgres -d miftah_test -c "CREATE SCHEMA IF NOT EXISTS public;"
-            # Grant privileges to ensure Prisma has access
-            psql -h localhost -U postgres -d miftah_test -c "GRANT ALL ON SCHEMA public TO postgres;"
-            psql -h localhost -U postgres -d miftah_test -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres;"
-            # Verify extension one more time
-            psql -h localhost -U postgres -d miftah_test -c "SELECT uuid_generate_v4() AS test_uuid;"
         env:
-            PGPASSWORD: postgres
+          DATABASE_URL: mongodb://localhost:27017/miftah_test
         
       # Run Prisma validation
       - name: Validate Prisma Schema
         run: npx prisma validate
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/miftah_test?schema=public
+          DATABASE_URL: mongodb://localhost:27017/miftah_test
         
       # Push schema to test database (needed before tests)
-      - name: Push schema to database
-        run: |
-          # Make sure extension is loaded before pushing the schema
-          psql -h localhost -U postgres -d miftah_test -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
-          # Then run the Prisma push without the invalid flag
-          npx prisma db push --force-reset
+      - name: Push schema to MongoDB
+        run: npx prisma db push --force-reset
         env:
-          PGPASSWORD: postgres
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/miftah_test?schema=public
+          DATABASE_URL: mongodb://localhost:27017/miftah_test
         
       # Run Prisma tests with the test database
       - name: Run Prisma tests
         run: npx prisma validate
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/miftah_test?schema=public
+          DATABASE_URL: mongodb://localhost:27017/miftah_test
 
       # Restore Next.js cache if available
       - name: Restore Next.js cache
