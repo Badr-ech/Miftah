@@ -49,9 +49,9 @@ export default function LoginPage() {
           title: 'Login Successful',
           description: `You are now logged in.`,
           variant: 'default',
-        });
-      }
+        });      }
       
+      // Always redirect to the main dashboard which handles role-based content
       router.push('/dashboard');
       router.refresh(); // Important to re-fetch layout and user data
     } catch (error) {
@@ -65,7 +65,7 @@ export default function LoginPage() {
           toast({
             title: 'Demo Login',
             description: `Login successful with demo credentials as ${fallbackRole}.`,
-          });
+          });          // Always redirect to the main dashboard regardless of role
           router.push('/dashboard');
           router.refresh();
           return;

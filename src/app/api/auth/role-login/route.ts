@@ -14,8 +14,17 @@ export async function POST(request: Request) {
       );
     }    // For demo purposes, we'll skip DB lookup and just create a default user
     // This ensures the quick login always works
+    // Generate a proper UUID for the user ID that Postgres will accept
+    function generateUUID() {
+      // This creates a valid UUID v4
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+    
     const defaultUser = {
-      id: `default_${role}_user`,
+      id: generateUUID(),
       name: `Default ${role.charAt(0).toUpperCase() + role.slice(1)}`,
       email: `default_${role}@example.com`,
       role: role.toLowerCase(),
