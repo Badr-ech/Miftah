@@ -23,8 +23,9 @@ const nextConfig = {
   },  // Handle the dynamic server usage errors
   // Note: Next.js 15 doesn't support 'hybrid' output anymore
   output: 'standalone',
-    // Explicitly mark routes that use cookies() as dynamic
-  // This prevents the "Dynamic server usage" errors during build  experimental: {
+  // Explicitly mark routes that use cookies() as dynamic
+  // This prevents the "Dynamic server usage" errors during build
+  experimental: {
     // Disabled CSS optimization due to issues with critters package
     // optimizeCss: true,
     serverActions: {
