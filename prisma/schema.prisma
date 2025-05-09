@@ -4,20 +4,20 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id                    String                 @id @default(uuid()) @db.Uuid
-  name                  String                 @db.VarChar(255)
-  email                 String                 @unique @db.VarChar(255)
-  emailVerified         DateTime?              @db.Timestamp(6)
-  password              String?                @db.VarChar(255)
-  avatarUrl             String?                @db.VarChar(255)
+  id                    String                 @id @default(auto()) @map("_id") @db.ObjectId
+  name                  String
+  email                 String                 @unique
+  emailVerified         DateTime?
+  password              String?
+  avatarUrl             String?
   role                  UserRole               @default(STUDENT)
-  createdAt             DateTime               @default(now()) @db.Timestamp(6)
-  updatedAt             DateTime               @default(now()) @updatedAt @db.Timestamp(6)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @default(now()) @updatedAt
   announcements         Announcement[]
   assignmentSubmissions AssignmentSubmission[]
   teacherCourses        Course[]               @relation("TeacherCourses")
@@ -27,119 +27,103 @@ model User {
 }
 
 model Course {
-  id            String             @id @default(uuid()) @db.Uuid
-  title         String             @db.VarChar(255)
+  id            String             @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
   description   String
-  category      String             @db.VarChar(50)
-  imageUrl      String?            @db.VarChar(255)
-  createdAt     DateTime           @default(now()) @db.Timestamp(6)
-  updatedAt     DateTime           @default(now()) @updatedAt @db.Timestamp(6)
-  teacherId     String             @db.Uuid
+  category      String
+  imageUrl      String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @default(now()) @updatedAt
+  teacherId     String             @db.ObjectId
   announcements Announcement[]
   assignments   Assignment[]
-  teacher       User               @relation("TeacherCourses", fields: [teacherId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher       User               @relation("TeacherCourses", fields: [teacherId], references: [id])
   enrollments   CourseEnrollment[]
   materials     CourseMaterial[]
-
-  @@index([teacherId], map: "idx_course_teacher_id")
 }
 
 model CourseEnrollment {
-  id           String   @id @default(uuid()) @db.Uuid
-  enrolledAt   DateTime @default(now()) @db.Timestamp(6)
-  lastAccessed DateTime @default(now()) @db.Timestamp(6)
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  enrolledAt   DateTime @default(now())
+  lastAccessed DateTime @default(now())
   progress     Float    @default(0)
-  userId       String   @db.Uuid
-  courseId     String   @db.Uuid
-  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  userId       String   @db.ObjectId
+  courseId     String   @db.ObjectId
+  course       Course   @relation(fields: [courseId], references: [id])
+  user         User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, courseId])
-  @@index([courseId], map: "idx_enrollment_course_id")
-  @@index([userId], map: "idx_enrollment_user_id")
 }
 
 model CourseMaterial {
-  id         String       @id @default(uuid()) @db.Uuid
-  title      String       @db.VarChar(255)
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
   type       MaterialType
-  url        String?      @db.VarChar(255)
+  url        String?
   content    String?
-  uploadedAt DateTime     @default(now()) @db.Timestamp(6)
-  courseId   String       @db.Uuid
-  course     Course       @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([courseId], map: "idx_material_course_id")
+  uploadedAt DateTime     @default(now())
+  courseId   String       @db.ObjectId
+  course     Course       @relation(fields: [courseId], references: [id])
 }
 
 model Assignment {
-  id          String                 @id @default(uuid()) @db.Uuid
-  title       String                 @db.VarChar(255)
+  id          String                 @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
   description String
-  dueDate     DateTime               @db.Timestamp(6)
+  dueDate     DateTime
   totalPoints Int?
-  createdAt   DateTime               @default(now()) @db.Timestamp(6)
-  updatedAt   DateTime               @default(now()) @updatedAt @db.Timestamp(6)
-  courseId    String                 @db.Uuid
-  course      Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @default(now()) @updatedAt
+  courseId    String                 @db.ObjectId
+  course      Course                 @relation(fields: [courseId], references: [id])
   submissions AssignmentSubmission[]
-
-  @@index([courseId], map: "idx_assignment_course_id")
 }
 
 model AssignmentSubmission {
-  id           String           @id @default(uuid()) @db.Uuid
-  submittedAt  DateTime         @default(now()) @db.Timestamp(6)
-  grade        String?          @db.VarChar(10)
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  submittedAt  DateTime         @default(now())
+  grade        String?
   status       SubmissionStatus @default(PENDING)
   content      String?
   feedback     String?
-  assignmentId String           @db.Uuid
-  studentId    String           @db.Uuid
-  assignment   Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  student      User             @relation(fields: [studentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  assignmentId String           @db.ObjectId
+  studentId    String           @db.ObjectId
+  assignment   Assignment       @relation(fields: [assignmentId], references: [id])
+  student      User             @relation(fields: [studentId], references: [id])
 
   @@unique([assignmentId, studentId])
-  @@index([assignmentId], map: "idx_submission_assignment_id")
-  @@index([studentId], map: "idx_submission_student_id")
 }
 
 model Message {
-  id         String   @id @default(uuid()) @db.Uuid
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
   content    String
-  sentAt     DateTime @default(now()) @db.Timestamp(6)
+  sentAt     DateTime @default(now())
   isRead     Boolean  @default(false)
-  senderId   String   @db.Uuid
-  receiverId String   @db.Uuid
-  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([receiverId], map: "idx_message_receiver_id")
-  @@index([senderId], map: "idx_message_sender_id")
+  senderId   String   @db.ObjectId
+  receiverId String   @db.ObjectId
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
 }
 
 model Announcement {
-  id        String   @id @default(uuid()) @db.Uuid
-  title     String   @db.VarChar(255)
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
   content   String
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  authorId  String   @db.Uuid
-  courseId  String   @db.Uuid
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([authorId], map: "idx_announcement_author_id")
-  @@index([courseId], map: "idx_announcement_course_id")
+  createdAt DateTime @default(now())
+  authorId  String   @db.ObjectId
+  courseId  String   @db.ObjectId
+  author    User     @relation(fields: [authorId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
 }
 
 model StudentProgress {
-  id                   String   @id @default(uuid()) @db.Uuid
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
   completedAssignments Int      @default(0)
   totalAssignments     Int      @default(0)
-  overallGrade         String?  @db.VarChar(10)
-  lastUpdated          DateTime @default(now()) @db.Timestamp(6)
-  userId               String   @unique @db.Uuid
-  courseId             String   @db.VarChar(255)
+  overallGrade         String?
+  lastUpdated          DateTime @default(now())
+  userId               String   @unique @db.ObjectId
+  courseId             String
 
   @@unique([userId, courseId])
 }

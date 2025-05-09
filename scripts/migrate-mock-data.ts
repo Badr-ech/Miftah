@@ -1,11 +1,17 @@
 import { db } from '../src/lib/db';
 import { mockUsers, mockCourses, mockEnrolledCourses } from '../src/lib/mock-data';
+import { ObjectId } from 'bson';
 
 // Define UserRole enum to match the one in the Prisma schema
 enum UserRole {
   STUDENT = 'STUDENT',
   TEACHER = 'TEACHER',
   ADMIN = 'ADMIN'
+}
+
+// Helper function to create MongoDB ObjectIds
+function createId(): string {
+  return new ObjectId().toString();
 }
 
 /**

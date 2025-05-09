@@ -1,5 +1,6 @@
 ﻿import { PrismaClient } from '../src/generated/prisma';
 import { hash } from 'bcryptjs';
+import { ObjectId } from 'bson';
 
 // Define enums manually since they aren't being properly imported
 enum UserRole {
@@ -13,6 +14,11 @@ enum MaterialType {
   VIDEO = 'VIDEO', 
   LINK = 'LINK', 
   TEXT = 'TEXT'
+}
+
+// Helper function to create consistent MongoDB ObjectIds
+function createId(): string {
+  return new ObjectId().toString();
 }
 
 enum SubmissionStatus {

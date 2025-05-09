@@ -162,53 +162,6 @@ export class PrismaClient<
   $use(cb: Prisma.Middleware): void
 
 /**
-   * Executes a prepared raw query and returns the number of affected rows.
-   * @example
-   * ```
-   * const result = await prisma.$executeRaw`UPDATE User SET cool = ${true} WHERE email = ${'user@email.com'};`
-   * ```
-   *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
-   */
-  $executeRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<number>;
-
-  /**
-   * Executes a raw query and returns the number of affected rows.
-   * Susceptible to SQL injections, see documentation.
-   * @example
-   * ```
-   * const result = await prisma.$executeRawUnsafe('UPDATE User SET cool = $1 WHERE email = $2 ;', true, 'user@email.com')
-   * ```
-   *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
-   */
-  $executeRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<number>;
-
-  /**
-   * Performs a prepared raw query and returns the `SELECT` data.
-   * @example
-   * ```
-   * const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'user@email.com'};`
-   * ```
-   *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
-   */
-  $queryRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<T>;
-
-  /**
-   * Performs a raw query and returns the `SELECT` data.
-   * Susceptible to SQL injections, see documentation.
-   * @example
-   * ```
-   * const result = await prisma.$queryRawUnsafe('SELECT * FROM User WHERE id = $1 OR email = $2;', 1, 'user@email.com')
-   * ```
-   *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
-   */
-  $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<T>;
-
-
-  /**
    * Allows the running of a sequence of read/write operations that are guaranteed to either succeed or fail as a whole.
    * @example
    * ```
@@ -221,10 +174,24 @@ export class PrismaClient<
    * 
    * Read more in our [docs](https://www.prisma.io/docs/concepts/components/prisma-client/transactions).
    */
-  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
+  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P]): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
-  $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => $Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<R>
+  $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => $Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number }): $Utils.JsPromise<R>
 
+  /**
+   * Executes a raw MongoDB command and returns the result of it.
+   * @example
+   * ```
+   * const user = await prisma.$runCommandRaw({
+   *   aggregate: 'User',
+   *   pipeline: [{ $match: { name: 'Bob' } }, { $project: { email: true, _id: false } }],
+   *   explain: false,
+   * })
+   * ```
+   * 
+   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+   */
+  $runCommandRaw(command: Prisma.InputJsonObject): Prisma.PrismaPromise<Prisma.JsonObject>
 
   $extends: $Extensions.ExtendsHook<"extends", Prisma.TypeMapCb<ClientOptions>, ExtArgs, $Utils.Call<Prisma.TypeMapCb<ClientOptions>, {
     extArgs: ExtArgs
@@ -787,7 +754,7 @@ export namespace Prisma {
     }
     meta: {
       modelProps: "user" | "course" | "courseEnrollment" | "courseMaterial" | "assignment" | "assignmentSubmission" | "message" | "announcement" | "studentProgress"
-      txIsolationLevel: Prisma.TransactionIsolationLevel
+      txIsolationLevel: never
     }
     model: {
       User: {
@@ -822,10 +789,6 @@ export namespace Prisma {
             args: Prisma.UserCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          createManyAndReturn: {
-            args: Prisma.UserCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserPayload>[]
-          }
           delete: {
             args: Prisma.UserDeleteArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$UserPayload>
@@ -842,10 +805,6 @@ export namespace Prisma {
             args: Prisma.UserUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          updateManyAndReturn: {
-            args: Prisma.UserUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$UserPayload>[]
-          }
           upsert: {
             args: Prisma.UserUpsertArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$UserPayload>
@@ -857,6 +816,14 @@ export namespace Prisma {
           groupBy: {
             args: Prisma.UserGroupByArgs<ExtArgs>
             result: $Utils.Optional<UserGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.UserFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.UserAggregateRawArgs<ExtArgs>
+            result: JsonObject
           }
           count: {
             args: Prisma.UserCountArgs<ExtArgs>
@@ -896,10 +863,6 @@ export namespace Prisma {
             args: Prisma.CourseCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          createManyAndReturn: {
-            args: Prisma.CourseCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CoursePayload>[]
-          }
           delete: {
             args: Prisma.CourseDeleteArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$CoursePayload>
@@ -916,10 +879,6 @@ export namespace Prisma {
             args: Prisma.CourseUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          updateManyAndReturn: {
-            args: Prisma.CourseUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CoursePayload>[]
-          }
           upsert: {
             args: Prisma.CourseUpsertArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$CoursePayload>
@@ -931,6 +890,14 @@ export namespace Prisma {
           groupBy: {
             args: Prisma.CourseGroupByArgs<ExtArgs>
             result: $Utils.Optional<CourseGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.CourseFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.CourseAggregateRawArgs<ExtArgs>
+            result: JsonObject
           }
           count: {
             args: Prisma.CourseCountArgs<ExtArgs>
@@ -970,10 +937,6 @@ export namespace Prisma {
             args: Prisma.CourseEnrollmentCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          createManyAndReturn: {
-            args: Prisma.CourseEnrollmentCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CourseEnrollmentPayload>[]
-          }
           delete: {
             args: Prisma.CourseEnrollmentDeleteArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$CourseEnrollmentPayload>
@@ -990,10 +953,6 @@ export namespace Prisma {
             args: Prisma.CourseEnrollmentUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          updateManyAndReturn: {
-            args: Prisma.CourseEnrollmentUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CourseEnrollmentPayload>[]
-          }
           upsert: {
             args: Prisma.CourseEnrollmentUpsertArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$CourseEnrollmentPayload>
@@ -1005,6 +964,14 @@ export namespace Prisma {
           groupBy: {
             args: Prisma.CourseEnrollmentGroupByArgs<ExtArgs>
             result: $Utils.Optional<CourseEnrollmentGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.CourseEnrollmentFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.CourseEnrollmentAggregateRawArgs<ExtArgs>
+            result: JsonObject
           }
           count: {
             args: Prisma.CourseEnrollmentCountArgs<ExtArgs>
@@ -1044,10 +1011,6 @@ export namespace Prisma {
             args: Prisma.CourseMaterialCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          createManyAndReturn: {
-            args: Prisma.CourseMaterialCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CourseMaterialPayload>[]
-          }
           delete: {
             args: Prisma.CourseMaterialDeleteArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$CourseMaterialPayload>
@@ -1064,10 +1027,6 @@ export namespace Prisma {
             args: Prisma.CourseMaterialUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          updateManyAndReturn: {
-            args: Prisma.CourseMaterialUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CourseMaterialPayload>[]
-          }
           upsert: {
             args: Prisma.CourseMaterialUpsertArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$CourseMaterialPayload>
@@ -1079,6 +1038,14 @@ export namespace Prisma {
           groupBy: {
             args: Prisma.CourseMaterialGroupByArgs<ExtArgs>
             result: $Utils.Optional<CourseMaterialGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.CourseMaterialFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.CourseMaterialAggregateRawArgs<ExtArgs>
+            result: JsonObject
           }
           count: {
             args: Prisma.CourseMaterialCountArgs<ExtArgs>
@@ -1118,10 +1085,6 @@ export namespace Prisma {
             args: Prisma.AssignmentCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          createManyAndReturn: {
-            args: Prisma.AssignmentCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AssignmentPayload>[]
-          }
           delete: {
             args: Prisma.AssignmentDeleteArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$AssignmentPayload>
@@ -1138,10 +1101,6 @@ export namespace Prisma {
             args: Prisma.AssignmentUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          updateManyAndReturn: {
-            args: Prisma.AssignmentUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AssignmentPayload>[]
-          }
           upsert: {
             args: Prisma.AssignmentUpsertArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$AssignmentPayload>
@@ -1153,6 +1112,14 @@ export namespace Prisma {
           groupBy: {
             args: Prisma.AssignmentGroupByArgs<ExtArgs>
             result: $Utils.Optional<AssignmentGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.AssignmentFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.AssignmentAggregateRawArgs<ExtArgs>
+            result: JsonObject
           }
           count: {
             args: Prisma.AssignmentCountArgs<ExtArgs>
@@ -1192,10 +1159,6 @@ export namespace Prisma {
             args: Prisma.AssignmentSubmissionCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          createManyAndReturn: {
-            args: Prisma.AssignmentSubmissionCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AssignmentSubmissionPayload>[]
-          }
           delete: {
             args: Prisma.AssignmentSubmissionDeleteArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$AssignmentSubmissionPayload>
@@ -1212,10 +1175,6 @@ export namespace Prisma {
             args: Prisma.AssignmentSubmissionUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          updateManyAndReturn: {
-            args: Prisma.AssignmentSubmissionUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AssignmentSubmissionPayload>[]
-          }
           upsert: {
             args: Prisma.AssignmentSubmissionUpsertArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$AssignmentSubmissionPayload>
@@ -1227,6 +1186,14 @@ export namespace Prisma {
           groupBy: {
             args: Prisma.AssignmentSubmissionGroupByArgs<ExtArgs>
             result: $Utils.Optional<AssignmentSubmissionGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.AssignmentSubmissionFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.AssignmentSubmissionAggregateRawArgs<ExtArgs>
+            result: JsonObject
           }
           count: {
             args: Prisma.AssignmentSubmissionCountArgs<ExtArgs>
@@ -1266,10 +1233,6 @@ export namespace Prisma {
             args: Prisma.MessageCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          createManyAndReturn: {
-            args: Prisma.MessageCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessagePayload>[]
-          }
           delete: {
             args: Prisma.MessageDeleteArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$MessagePayload>
@@ -1286,10 +1249,6 @@ export namespace Prisma {
             args: Prisma.MessageUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          updateManyAndReturn: {
-            args: Prisma.MessageUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessagePayload>[]
-          }
           upsert: {
             args: Prisma.MessageUpsertArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$MessagePayload>
@@ -1301,6 +1260,14 @@ export namespace Prisma {
           groupBy: {
             args: Prisma.MessageGroupByArgs<ExtArgs>
             result: $Utils.Optional<MessageGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.MessageFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.MessageAggregateRawArgs<ExtArgs>
+            result: JsonObject
           }
           count: {
             args: Prisma.MessageCountArgs<ExtArgs>
@@ -1340,10 +1307,6 @@ export namespace Prisma {
             args: Prisma.AnnouncementCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          createManyAndReturn: {
-            args: Prisma.AnnouncementCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AnnouncementPayload>[]
-          }
           delete: {
             args: Prisma.AnnouncementDeleteArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$AnnouncementPayload>
@@ -1360,10 +1323,6 @@ export namespace Prisma {
             args: Prisma.AnnouncementUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          updateManyAndReturn: {
-            args: Prisma.AnnouncementUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$AnnouncementPayload>[]
-          }
           upsert: {
             args: Prisma.AnnouncementUpsertArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$AnnouncementPayload>
@@ -1375,6 +1334,14 @@ export namespace Prisma {
           groupBy: {
             args: Prisma.AnnouncementGroupByArgs<ExtArgs>
             result: $Utils.Optional<AnnouncementGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.AnnouncementFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.AnnouncementAggregateRawArgs<ExtArgs>
+            result: JsonObject
           }
           count: {
             args: Prisma.AnnouncementCountArgs<ExtArgs>
@@ -1414,10 +1381,6 @@ export namespace Prisma {
             args: Prisma.StudentProgressCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          createManyAndReturn: {
-            args: Prisma.StudentProgressCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$StudentProgressPayload>[]
-          }
           delete: {
             args: Prisma.StudentProgressDeleteArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$StudentProgressPayload>
@@ -1434,10 +1397,6 @@ export namespace Prisma {
             args: Prisma.StudentProgressUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
-          updateManyAndReturn: {
-            args: Prisma.StudentProgressUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$StudentProgressPayload>[]
-          }
           upsert: {
             args: Prisma.StudentProgressUpsertArgs<ExtArgs>
             result: $Utils.PayloadToResult<Prisma.$StudentProgressPayload>
@@ -1450,6 +1409,14 @@ export namespace Prisma {
             args: Prisma.StudentProgressGroupByArgs<ExtArgs>
             result: $Utils.Optional<StudentProgressGroupByOutputType>[]
           }
+          findRaw: {
+            args: Prisma.StudentProgressFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.StudentProgressAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
           count: {
             args: Prisma.StudentProgressCountArgs<ExtArgs>
             result: $Utils.Optional<StudentProgressCountAggregateOutputType> | number
@@ -1461,21 +1428,9 @@ export namespace Prisma {
     other: {
       payload: any
       operations: {
-        $executeRaw: {
-          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any[]],
-          result: any
-        }
-        $executeRawUnsafe: {
-          args: [query: string, ...values: any[]],
-          result: any
-        }
-        $queryRaw: {
-          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any[]],
-          result: any
-        }
-        $queryRawUnsafe: {
-          args: [query: string, ...values: any[]],
-          result: any
+        $runCommandRaw: {
+          args: Prisma.InputJsonObject,
+          result: Prisma.JsonObject
         }
       }
     }
@@ -1521,7 +1476,6 @@ export namespace Prisma {
     transactionOptions?: {
       maxWait?: number
       timeout?: number
-      isolationLevel?: Prisma.TransactionIsolationLevel
     }
     /**
      * Global configuration for omitting model fields by default.
@@ -2012,29 +1966,7 @@ export namespace Prisma {
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
-  export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    name?: boolean
-    email?: boolean
-    emailVerified?: boolean
-    password?: boolean
-    avatarUrl?: boolean
-    role?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }, ExtArgs["result"]["user"]>
 
-  export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    name?: boolean
-    email?: boolean
-    emailVerified?: boolean
-    password?: boolean
-    avatarUrl?: boolean
-    role?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
     id?: boolean
@@ -2058,8 +1990,6 @@ export namespace Prisma {
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type UserIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
@@ -2199,30 +2129,6 @@ export namespace Prisma {
     createMany<T extends UserCreateManyArgs>(args?: SelectSubset<T, UserCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many Users and returns the data saved in the database.
-     * @param {UserCreateManyAndReturnArgs} args - Arguments to create many Users.
-     * @example
-     * // Create many Users
-     * const user = await prisma.user.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Users and only return the `id`
-     * const userWithIdOnly = await prisma.user.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends UserCreateManyAndReturnArgs>(args?: SelectSubset<T, UserCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Delete a User.
      * @param {UserDeleteArgs} args - Arguments to delete one User.
      * @example
@@ -2287,36 +2193,6 @@ export namespace Prisma {
     updateMany<T extends UserUpdateManyArgs>(args: SelectSubset<T, UserUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Users and returns the data updated in the database.
-     * @param {UserUpdateManyAndReturnArgs} args - Arguments to update many Users.
-     * @example
-     * // Update many Users
-     * const user = await prisma.user.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Users and only return the `id`
-     * const userWithIdOnly = await prisma.user.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends UserUpdateManyAndReturnArgs>(args: SelectSubset<T, UserUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Create or update one User.
      * @param {UserUpsertArgs} args - Arguments to update or create a User.
      * @example
@@ -2334,6 +2210,29 @@ export namespace Prisma {
      * })
      */
     upsert<T extends UserUpsertArgs>(args: SelectSubset<T, UserUpsertArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Users that matches the filter.
+     * @param {UserFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const user = await prisma.user.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: UserFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a User.
+     * @param {UserAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const user = await prisma.user.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: UserAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
@@ -2748,26 +2647,6 @@ export namespace Prisma {
      * The data used to create many Users.
      */
     data: UserCreateManyInput | UserCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * User createManyAndReturn
-   */
-  export type UserCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the User
-     */
-    select?: UserSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
-    /**
-     * The data used to create many Users.
-     */
-    data: UserCreateManyInput | UserCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -2800,32 +2679,6 @@ export namespace Prisma {
    * User updateMany
    */
   export type UserUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update Users.
-     */
-    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyInput>
-    /**
-     * Filter which Users to update
-     */
-    where?: UserWhereInput
-    /**
-     * Limit how many Users to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * User updateManyAndReturn
-   */
-  export type UserUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the User
-     */
-    select?: UserSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the User
-     */
-    omit?: UserOmit<ExtArgs> | null
     /**
      * The data used to update Users.
      */
@@ -2904,6 +2757,34 @@ export namespace Prisma {
      * Limit how many Users to delete.
      */
     limit?: number
+  }
+
+  /**
+   * User findRaw
+   */
+  export type UserFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * User aggregateRaw
+   */
+  export type UserAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
   }
 
   /**
@@ -3265,29 +3146,7 @@ export namespace Prisma {
     _count?: boolean | CourseCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["course"]>
 
-  export type CourseSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    title?: boolean
-    description?: boolean
-    category?: boolean
-    imageUrl?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    teacherId?: boolean
-    teacher?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["course"]>
 
-  export type CourseSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    title?: boolean
-    description?: boolean
-    category?: boolean
-    imageUrl?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    teacherId?: boolean
-    teacher?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["course"]>
 
   export type CourseSelectScalar = {
     id?: boolean
@@ -3308,12 +3167,6 @@ export namespace Prisma {
     enrollments?: boolean | Course$enrollmentsArgs<ExtArgs>
     materials?: boolean | Course$materialsArgs<ExtArgs>
     _count?: boolean | CourseCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type CourseIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    teacher?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type CourseIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    teacher?: boolean | UserDefaultArgs<ExtArgs>
   }
 
   export type $CoursePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3452,30 +3305,6 @@ export namespace Prisma {
     createMany<T extends CourseCreateManyArgs>(args?: SelectSubset<T, CourseCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many Courses and returns the data saved in the database.
-     * @param {CourseCreateManyAndReturnArgs} args - Arguments to create many Courses.
-     * @example
-     * // Create many Courses
-     * const course = await prisma.course.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Courses and only return the `id`
-     * const courseWithIdOnly = await prisma.course.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends CourseCreateManyAndReturnArgs>(args?: SelectSubset<T, CourseCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CoursePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Delete a Course.
      * @param {CourseDeleteArgs} args - Arguments to delete one Course.
      * @example
@@ -3540,36 +3369,6 @@ export namespace Prisma {
     updateMany<T extends CourseUpdateManyArgs>(args: SelectSubset<T, CourseUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Courses and returns the data updated in the database.
-     * @param {CourseUpdateManyAndReturnArgs} args - Arguments to update many Courses.
-     * @example
-     * // Update many Courses
-     * const course = await prisma.course.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Courses and only return the `id`
-     * const courseWithIdOnly = await prisma.course.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends CourseUpdateManyAndReturnArgs>(args: SelectSubset<T, CourseUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CoursePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Create or update one Course.
      * @param {CourseUpsertArgs} args - Arguments to update or create a Course.
      * @example
@@ -3587,6 +3386,29 @@ export namespace Prisma {
      * })
      */
     upsert<T extends CourseUpsertArgs>(args: SelectSubset<T, CourseUpsertArgs<ExtArgs>>): Prisma__CourseClient<$Result.GetResult<Prisma.$CoursePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Courses that matches the filter.
+     * @param {CourseFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const course = await prisma.course.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: CourseFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Course.
+     * @param {CourseAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const course = await prisma.course.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: CourseAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
@@ -3999,30 +3821,6 @@ export namespace Prisma {
      * The data used to create many Courses.
      */
     data: CourseCreateManyInput | CourseCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Course createManyAndReturn
-   */
-  export type CourseCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Course
-     */
-    select?: CourseSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Course
-     */
-    omit?: CourseOmit<ExtArgs> | null
-    /**
-     * The data used to create many Courses.
-     */
-    data: CourseCreateManyInput | CourseCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CourseIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -4067,36 +3865,6 @@ export namespace Prisma {
      * Limit how many Courses to update.
      */
     limit?: number
-  }
-
-  /**
-   * Course updateManyAndReturn
-   */
-  export type CourseUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Course
-     */
-    select?: CourseSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Course
-     */
-    omit?: CourseOmit<ExtArgs> | null
-    /**
-     * The data used to update Courses.
-     */
-    data: XOR<CourseUpdateManyMutationInput, CourseUncheckedUpdateManyInput>
-    /**
-     * Filter which Courses to update
-     */
-    where?: CourseWhereInput
-    /**
-     * Limit how many Courses to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CourseIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -4163,6 +3931,34 @@ export namespace Prisma {
      * Limit how many Courses to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Course findRaw
+   */
+  export type CourseFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Course aggregateRaw
+   */
+  export type CourseAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
   }
 
   /**
@@ -4490,27 +4286,7 @@ export namespace Prisma {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["courseEnrollment"]>
 
-  export type CourseEnrollmentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    enrolledAt?: boolean
-    lastAccessed?: boolean
-    progress?: boolean
-    userId?: boolean
-    courseId?: boolean
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["courseEnrollment"]>
 
-  export type CourseEnrollmentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    enrolledAt?: boolean
-    lastAccessed?: boolean
-    progress?: boolean
-    userId?: boolean
-    courseId?: boolean
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["courseEnrollment"]>
 
   export type CourseEnrollmentSelectScalar = {
     id?: boolean
@@ -4523,14 +4299,6 @@ export namespace Prisma {
 
   export type CourseEnrollmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "enrolledAt" | "lastAccessed" | "progress" | "userId" | "courseId", ExtArgs["result"]["courseEnrollment"]>
   export type CourseEnrollmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type CourseEnrollmentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type CourseEnrollmentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     course?: boolean | CourseDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -4666,30 +4434,6 @@ export namespace Prisma {
     createMany<T extends CourseEnrollmentCreateManyArgs>(args?: SelectSubset<T, CourseEnrollmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many CourseEnrollments and returns the data saved in the database.
-     * @param {CourseEnrollmentCreateManyAndReturnArgs} args - Arguments to create many CourseEnrollments.
-     * @example
-     * // Create many CourseEnrollments
-     * const courseEnrollment = await prisma.courseEnrollment.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many CourseEnrollments and only return the `id`
-     * const courseEnrollmentWithIdOnly = await prisma.courseEnrollment.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends CourseEnrollmentCreateManyAndReturnArgs>(args?: SelectSubset<T, CourseEnrollmentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CourseEnrollmentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Delete a CourseEnrollment.
      * @param {CourseEnrollmentDeleteArgs} args - Arguments to delete one CourseEnrollment.
      * @example
@@ -4754,36 +4498,6 @@ export namespace Prisma {
     updateMany<T extends CourseEnrollmentUpdateManyArgs>(args: SelectSubset<T, CourseEnrollmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more CourseEnrollments and returns the data updated in the database.
-     * @param {CourseEnrollmentUpdateManyAndReturnArgs} args - Arguments to update many CourseEnrollments.
-     * @example
-     * // Update many CourseEnrollments
-     * const courseEnrollment = await prisma.courseEnrollment.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more CourseEnrollments and only return the `id`
-     * const courseEnrollmentWithIdOnly = await prisma.courseEnrollment.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends CourseEnrollmentUpdateManyAndReturnArgs>(args: SelectSubset<T, CourseEnrollmentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CourseEnrollmentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Create or update one CourseEnrollment.
      * @param {CourseEnrollmentUpsertArgs} args - Arguments to update or create a CourseEnrollment.
      * @example
@@ -4801,6 +4515,29 @@ export namespace Prisma {
      * })
      */
     upsert<T extends CourseEnrollmentUpsertArgs>(args: SelectSubset<T, CourseEnrollmentUpsertArgs<ExtArgs>>): Prisma__CourseEnrollmentClient<$Result.GetResult<Prisma.$CourseEnrollmentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CourseEnrollments that matches the filter.
+     * @param {CourseEnrollmentFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const courseEnrollment = await prisma.courseEnrollment.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: CourseEnrollmentFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a CourseEnrollment.
+     * @param {CourseEnrollmentAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const courseEnrollment = await prisma.courseEnrollment.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: CourseEnrollmentAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
@@ -5208,30 +4945,6 @@ export namespace Prisma {
      * The data used to create many CourseEnrollments.
      */
     data: CourseEnrollmentCreateManyInput | CourseEnrollmentCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * CourseEnrollment createManyAndReturn
-   */
-  export type CourseEnrollmentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the CourseEnrollment
-     */
-    select?: CourseEnrollmentSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the CourseEnrollment
-     */
-    omit?: CourseEnrollmentOmit<ExtArgs> | null
-    /**
-     * The data used to create many CourseEnrollments.
-     */
-    data: CourseEnrollmentCreateManyInput | CourseEnrollmentCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CourseEnrollmentIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -5276,36 +4989,6 @@ export namespace Prisma {
      * Limit how many CourseEnrollments to update.
      */
     limit?: number
-  }
-
-  /**
-   * CourseEnrollment updateManyAndReturn
-   */
-  export type CourseEnrollmentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the CourseEnrollment
-     */
-    select?: CourseEnrollmentSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the CourseEnrollment
-     */
-    omit?: CourseEnrollmentOmit<ExtArgs> | null
-    /**
-     * The data used to update CourseEnrollments.
-     */
-    data: XOR<CourseEnrollmentUpdateManyMutationInput, CourseEnrollmentUncheckedUpdateManyInput>
-    /**
-     * Filter which CourseEnrollments to update
-     */
-    where?: CourseEnrollmentWhereInput
-    /**
-     * Limit how many CourseEnrollments to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CourseEnrollmentIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -5372,6 +5055,34 @@ export namespace Prisma {
      * Limit how many CourseEnrollments to delete.
      */
     limit?: number
+  }
+
+  /**
+   * CourseEnrollment findRaw
+   */
+  export type CourseEnrollmentFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * CourseEnrollment aggregateRaw
+   */
+  export type CourseEnrollmentAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
   }
 
   /**
@@ -5576,27 +5287,7 @@ export namespace Prisma {
     course?: boolean | CourseDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["courseMaterial"]>
 
-  export type CourseMaterialSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    title?: boolean
-    type?: boolean
-    url?: boolean
-    content?: boolean
-    uploadedAt?: boolean
-    courseId?: boolean
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["courseMaterial"]>
 
-  export type CourseMaterialSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    title?: boolean
-    type?: boolean
-    url?: boolean
-    content?: boolean
-    uploadedAt?: boolean
-    courseId?: boolean
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["courseMaterial"]>
 
   export type CourseMaterialSelectScalar = {
     id?: boolean
@@ -5610,12 +5301,6 @@ export namespace Prisma {
 
   export type CourseMaterialOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "type" | "url" | "content" | "uploadedAt" | "courseId", ExtArgs["result"]["courseMaterial"]>
   export type CourseMaterialInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-  }
-  export type CourseMaterialIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-  }
-  export type CourseMaterialIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     course?: boolean | CourseDefaultArgs<ExtArgs>
   }
 
@@ -5750,30 +5435,6 @@ export namespace Prisma {
     createMany<T extends CourseMaterialCreateManyArgs>(args?: SelectSubset<T, CourseMaterialCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many CourseMaterials and returns the data saved in the database.
-     * @param {CourseMaterialCreateManyAndReturnArgs} args - Arguments to create many CourseMaterials.
-     * @example
-     * // Create many CourseMaterials
-     * const courseMaterial = await prisma.courseMaterial.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many CourseMaterials and only return the `id`
-     * const courseMaterialWithIdOnly = await prisma.courseMaterial.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends CourseMaterialCreateManyAndReturnArgs>(args?: SelectSubset<T, CourseMaterialCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CourseMaterialPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Delete a CourseMaterial.
      * @param {CourseMaterialDeleteArgs} args - Arguments to delete one CourseMaterial.
      * @example
@@ -5838,36 +5499,6 @@ export namespace Prisma {
     updateMany<T extends CourseMaterialUpdateManyArgs>(args: SelectSubset<T, CourseMaterialUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more CourseMaterials and returns the data updated in the database.
-     * @param {CourseMaterialUpdateManyAndReturnArgs} args - Arguments to update many CourseMaterials.
-     * @example
-     * // Update many CourseMaterials
-     * const courseMaterial = await prisma.courseMaterial.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more CourseMaterials and only return the `id`
-     * const courseMaterialWithIdOnly = await prisma.courseMaterial.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends CourseMaterialUpdateManyAndReturnArgs>(args: SelectSubset<T, CourseMaterialUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CourseMaterialPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Create or update one CourseMaterial.
      * @param {CourseMaterialUpsertArgs} args - Arguments to update or create a CourseMaterial.
      * @example
@@ -5885,6 +5516,29 @@ export namespace Prisma {
      * })
      */
     upsert<T extends CourseMaterialUpsertArgs>(args: SelectSubset<T, CourseMaterialUpsertArgs<ExtArgs>>): Prisma__CourseMaterialClient<$Result.GetResult<Prisma.$CourseMaterialPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CourseMaterials that matches the filter.
+     * @param {CourseMaterialFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const courseMaterial = await prisma.courseMaterial.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: CourseMaterialFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a CourseMaterial.
+     * @param {CourseMaterialAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const courseMaterial = await prisma.courseMaterial.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: CourseMaterialAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
@@ -6292,30 +5946,6 @@ export namespace Prisma {
      * The data used to create many CourseMaterials.
      */
     data: CourseMaterialCreateManyInput | CourseMaterialCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * CourseMaterial createManyAndReturn
-   */
-  export type CourseMaterialCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the CourseMaterial
-     */
-    select?: CourseMaterialSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the CourseMaterial
-     */
-    omit?: CourseMaterialOmit<ExtArgs> | null
-    /**
-     * The data used to create many CourseMaterials.
-     */
-    data: CourseMaterialCreateManyInput | CourseMaterialCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CourseMaterialIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -6360,36 +5990,6 @@ export namespace Prisma {
      * Limit how many CourseMaterials to update.
      */
     limit?: number
-  }
-
-  /**
-   * CourseMaterial updateManyAndReturn
-   */
-  export type CourseMaterialUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the CourseMaterial
-     */
-    select?: CourseMaterialSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the CourseMaterial
-     */
-    omit?: CourseMaterialOmit<ExtArgs> | null
-    /**
-     * The data used to update CourseMaterials.
-     */
-    data: XOR<CourseMaterialUpdateManyMutationInput, CourseMaterialUncheckedUpdateManyInput>
-    /**
-     * Filter which CourseMaterials to update
-     */
-    where?: CourseMaterialWhereInput
-    /**
-     * Limit how many CourseMaterials to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CourseMaterialIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -6456,6 +6056,34 @@ export namespace Prisma {
      * Limit how many CourseMaterials to delete.
      */
     limit?: number
+  }
+
+  /**
+   * CourseMaterial findRaw
+   */
+  export type CourseMaterialFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * CourseMaterial aggregateRaw
+   */
+  export type CourseMaterialAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
   }
 
   /**
@@ -6704,29 +6332,7 @@ export namespace Prisma {
     _count?: boolean | AssignmentCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["assignment"]>
 
-  export type AssignmentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    title?: boolean
-    description?: boolean
-    dueDate?: boolean
-    totalPoints?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    courseId?: boolean
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["assignment"]>
 
-  export type AssignmentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    title?: boolean
-    description?: boolean
-    dueDate?: boolean
-    totalPoints?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    courseId?: boolean
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["assignment"]>
 
   export type AssignmentSelectScalar = {
     id?: boolean
@@ -6744,12 +6350,6 @@ export namespace Prisma {
     course?: boolean | CourseDefaultArgs<ExtArgs>
     submissions?: boolean | Assignment$submissionsArgs<ExtArgs>
     _count?: boolean | AssignmentCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type AssignmentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-  }
-  export type AssignmentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    course?: boolean | CourseDefaultArgs<ExtArgs>
   }
 
   export type $AssignmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6885,30 +6485,6 @@ export namespace Prisma {
     createMany<T extends AssignmentCreateManyArgs>(args?: SelectSubset<T, AssignmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many Assignments and returns the data saved in the database.
-     * @param {AssignmentCreateManyAndReturnArgs} args - Arguments to create many Assignments.
-     * @example
-     * // Create many Assignments
-     * const assignment = await prisma.assignment.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Assignments and only return the `id`
-     * const assignmentWithIdOnly = await prisma.assignment.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends AssignmentCreateManyAndReturnArgs>(args?: SelectSubset<T, AssignmentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssignmentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Delete a Assignment.
      * @param {AssignmentDeleteArgs} args - Arguments to delete one Assignment.
      * @example
@@ -6973,36 +6549,6 @@ export namespace Prisma {
     updateMany<T extends AssignmentUpdateManyArgs>(args: SelectSubset<T, AssignmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Assignments and returns the data updated in the database.
-     * @param {AssignmentUpdateManyAndReturnArgs} args - Arguments to update many Assignments.
-     * @example
-     * // Update many Assignments
-     * const assignment = await prisma.assignment.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Assignments and only return the `id`
-     * const assignmentWithIdOnly = await prisma.assignment.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends AssignmentUpdateManyAndReturnArgs>(args: SelectSubset<T, AssignmentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssignmentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Create or update one Assignment.
      * @param {AssignmentUpsertArgs} args - Arguments to update or create a Assignment.
      * @example
@@ -7020,6 +6566,29 @@ export namespace Prisma {
      * })
      */
     upsert<T extends AssignmentUpsertArgs>(args: SelectSubset<T, AssignmentUpsertArgs<ExtArgs>>): Prisma__AssignmentClient<$Result.GetResult<Prisma.$AssignmentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Assignments that matches the filter.
+     * @param {AssignmentFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const assignment = await prisma.assignment.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: AssignmentFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Assignment.
+     * @param {AssignmentAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const assignment = await prisma.assignment.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: AssignmentAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
@@ -7429,30 +6998,6 @@ export namespace Prisma {
      * The data used to create many Assignments.
      */
     data: AssignmentCreateManyInput | AssignmentCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Assignment createManyAndReturn
-   */
-  export type AssignmentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Assignment
-     */
-    select?: AssignmentSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Assignment
-     */
-    omit?: AssignmentOmit<ExtArgs> | null
-    /**
-     * The data used to create many Assignments.
-     */
-    data: AssignmentCreateManyInput | AssignmentCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AssignmentIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -7497,36 +7042,6 @@ export namespace Prisma {
      * Limit how many Assignments to update.
      */
     limit?: number
-  }
-
-  /**
-   * Assignment updateManyAndReturn
-   */
-  export type AssignmentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Assignment
-     */
-    select?: AssignmentSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Assignment
-     */
-    omit?: AssignmentOmit<ExtArgs> | null
-    /**
-     * The data used to update Assignments.
-     */
-    data: XOR<AssignmentUpdateManyMutationInput, AssignmentUncheckedUpdateManyInput>
-    /**
-     * Filter which Assignments to update
-     */
-    where?: AssignmentWhereInput
-    /**
-     * Limit how many Assignments to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AssignmentIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -7593,6 +7108,34 @@ export namespace Prisma {
      * Limit how many Assignments to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Assignment findRaw
+   */
+  export type AssignmentFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Assignment aggregateRaw
+   */
+  export type AssignmentAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
   }
 
   /**
@@ -7830,31 +7373,7 @@ export namespace Prisma {
     student?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["assignmentSubmission"]>
 
-  export type AssignmentSubmissionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    submittedAt?: boolean
-    grade?: boolean
-    status?: boolean
-    content?: boolean
-    feedback?: boolean
-    assignmentId?: boolean
-    studentId?: boolean
-    assignment?: boolean | AssignmentDefaultArgs<ExtArgs>
-    student?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["assignmentSubmission"]>
 
-  export type AssignmentSubmissionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    submittedAt?: boolean
-    grade?: boolean
-    status?: boolean
-    content?: boolean
-    feedback?: boolean
-    assignmentId?: boolean
-    studentId?: boolean
-    assignment?: boolean | AssignmentDefaultArgs<ExtArgs>
-    student?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["assignmentSubmission"]>
 
   export type AssignmentSubmissionSelectScalar = {
     id?: boolean
@@ -7869,14 +7388,6 @@ export namespace Prisma {
 
   export type AssignmentSubmissionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "submittedAt" | "grade" | "status" | "content" | "feedback" | "assignmentId" | "studentId", ExtArgs["result"]["assignmentSubmission"]>
   export type AssignmentSubmissionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    assignment?: boolean | AssignmentDefaultArgs<ExtArgs>
-    student?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type AssignmentSubmissionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    assignment?: boolean | AssignmentDefaultArgs<ExtArgs>
-    student?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type AssignmentSubmissionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     assignment?: boolean | AssignmentDefaultArgs<ExtArgs>
     student?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -8014,30 +7525,6 @@ export namespace Prisma {
     createMany<T extends AssignmentSubmissionCreateManyArgs>(args?: SelectSubset<T, AssignmentSubmissionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many AssignmentSubmissions and returns the data saved in the database.
-     * @param {AssignmentSubmissionCreateManyAndReturnArgs} args - Arguments to create many AssignmentSubmissions.
-     * @example
-     * // Create many AssignmentSubmissions
-     * const assignmentSubmission = await prisma.assignmentSubmission.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many AssignmentSubmissions and only return the `id`
-     * const assignmentSubmissionWithIdOnly = await prisma.assignmentSubmission.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends AssignmentSubmissionCreateManyAndReturnArgs>(args?: SelectSubset<T, AssignmentSubmissionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssignmentSubmissionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Delete a AssignmentSubmission.
      * @param {AssignmentSubmissionDeleteArgs} args - Arguments to delete one AssignmentSubmission.
      * @example
@@ -8102,36 +7589,6 @@ export namespace Prisma {
     updateMany<T extends AssignmentSubmissionUpdateManyArgs>(args: SelectSubset<T, AssignmentSubmissionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more AssignmentSubmissions and returns the data updated in the database.
-     * @param {AssignmentSubmissionUpdateManyAndReturnArgs} args - Arguments to update many AssignmentSubmissions.
-     * @example
-     * // Update many AssignmentSubmissions
-     * const assignmentSubmission = await prisma.assignmentSubmission.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more AssignmentSubmissions and only return the `id`
-     * const assignmentSubmissionWithIdOnly = await prisma.assignmentSubmission.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends AssignmentSubmissionUpdateManyAndReturnArgs>(args: SelectSubset<T, AssignmentSubmissionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AssignmentSubmissionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Create or update one AssignmentSubmission.
      * @param {AssignmentSubmissionUpsertArgs} args - Arguments to update or create a AssignmentSubmission.
      * @example
@@ -8149,6 +7606,29 @@ export namespace Prisma {
      * })
      */
     upsert<T extends AssignmentSubmissionUpsertArgs>(args: SelectSubset<T, AssignmentSubmissionUpsertArgs<ExtArgs>>): Prisma__AssignmentSubmissionClient<$Result.GetResult<Prisma.$AssignmentSubmissionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AssignmentSubmissions that matches the filter.
+     * @param {AssignmentSubmissionFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const assignmentSubmission = await prisma.assignmentSubmission.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: AssignmentSubmissionFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a AssignmentSubmission.
+     * @param {AssignmentSubmissionAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const assignmentSubmission = await prisma.assignmentSubmission.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: AssignmentSubmissionAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
@@ -8558,30 +8038,6 @@ export namespace Prisma {
      * The data used to create many AssignmentSubmissions.
      */
     data: AssignmentSubmissionCreateManyInput | AssignmentSubmissionCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * AssignmentSubmission createManyAndReturn
-   */
-  export type AssignmentSubmissionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AssignmentSubmission
-     */
-    select?: AssignmentSubmissionSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the AssignmentSubmission
-     */
-    omit?: AssignmentSubmissionOmit<ExtArgs> | null
-    /**
-     * The data used to create many AssignmentSubmissions.
-     */
-    data: AssignmentSubmissionCreateManyInput | AssignmentSubmissionCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AssignmentSubmissionIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -8626,36 +8082,6 @@ export namespace Prisma {
      * Limit how many AssignmentSubmissions to update.
      */
     limit?: number
-  }
-
-  /**
-   * AssignmentSubmission updateManyAndReturn
-   */
-  export type AssignmentSubmissionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AssignmentSubmission
-     */
-    select?: AssignmentSubmissionSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the AssignmentSubmission
-     */
-    omit?: AssignmentSubmissionOmit<ExtArgs> | null
-    /**
-     * The data used to update AssignmentSubmissions.
-     */
-    data: XOR<AssignmentSubmissionUpdateManyMutationInput, AssignmentSubmissionUncheckedUpdateManyInput>
-    /**
-     * Filter which AssignmentSubmissions to update
-     */
-    where?: AssignmentSubmissionWhereInput
-    /**
-     * Limit how many AssignmentSubmissions to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AssignmentSubmissionIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -8722,6 +8148,34 @@ export namespace Prisma {
      * Limit how many AssignmentSubmissions to delete.
      */
     limit?: number
+  }
+
+  /**
+   * AssignmentSubmission findRaw
+   */
+  export type AssignmentSubmissionFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * AssignmentSubmission aggregateRaw
+   */
+  export type AssignmentSubmissionAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
   }
 
   /**
@@ -8919,27 +8373,7 @@ export namespace Prisma {
     sender?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
 
-  export type MessageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    content?: boolean
-    sentAt?: boolean
-    isRead?: boolean
-    senderId?: boolean
-    receiverId?: boolean
-    receiver?: boolean | UserDefaultArgs<ExtArgs>
-    sender?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["message"]>
 
-  export type MessageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    content?: boolean
-    sentAt?: boolean
-    isRead?: boolean
-    senderId?: boolean
-    receiverId?: boolean
-    receiver?: boolean | UserDefaultArgs<ExtArgs>
-    sender?: boolean | UserDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["message"]>
 
   export type MessageSelectScalar = {
     id?: boolean
@@ -8952,14 +8386,6 @@ export namespace Prisma {
 
   export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "content" | "sentAt" | "isRead" | "senderId" | "receiverId", ExtArgs["result"]["message"]>
   export type MessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    receiver?: boolean | UserDefaultArgs<ExtArgs>
-    sender?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type MessageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    receiver?: boolean | UserDefaultArgs<ExtArgs>
-    sender?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type MessageIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     receiver?: boolean | UserDefaultArgs<ExtArgs>
     sender?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -9095,30 +8521,6 @@ export namespace Prisma {
     createMany<T extends MessageCreateManyArgs>(args?: SelectSubset<T, MessageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many Messages and returns the data saved in the database.
-     * @param {MessageCreateManyAndReturnArgs} args - Arguments to create many Messages.
-     * @example
-     * // Create many Messages
-     * const message = await prisma.message.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Messages and only return the `id`
-     * const messageWithIdOnly = await prisma.message.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends MessageCreateManyAndReturnArgs>(args?: SelectSubset<T, MessageCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Delete a Message.
      * @param {MessageDeleteArgs} args - Arguments to delete one Message.
      * @example
@@ -9183,36 +8585,6 @@ export namespace Prisma {
     updateMany<T extends MessageUpdateManyArgs>(args: SelectSubset<T, MessageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Messages and returns the data updated in the database.
-     * @param {MessageUpdateManyAndReturnArgs} args - Arguments to update many Messages.
-     * @example
-     * // Update many Messages
-     * const message = await prisma.message.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Messages and only return the `id`
-     * const messageWithIdOnly = await prisma.message.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends MessageUpdateManyAndReturnArgs>(args: SelectSubset<T, MessageUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Create or update one Message.
      * @param {MessageUpsertArgs} args - Arguments to update or create a Message.
      * @example
@@ -9230,6 +8602,29 @@ export namespace Prisma {
      * })
      */
     upsert<T extends MessageUpsertArgs>(args: SelectSubset<T, MessageUpsertArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Messages that matches the filter.
+     * @param {MessageFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const message = await prisma.message.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: MessageFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Message.
+     * @param {MessageAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const message = await prisma.message.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: MessageAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
@@ -9637,30 +9032,6 @@ export namespace Prisma {
      * The data used to create many Messages.
      */
     data: MessageCreateManyInput | MessageCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Message createManyAndReturn
-   */
-  export type MessageCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Message
-     */
-    select?: MessageSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Message
-     */
-    omit?: MessageOmit<ExtArgs> | null
-    /**
-     * The data used to create many Messages.
-     */
-    data: MessageCreateManyInput | MessageCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MessageIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -9705,36 +9076,6 @@ export namespace Prisma {
      * Limit how many Messages to update.
      */
     limit?: number
-  }
-
-  /**
-   * Message updateManyAndReturn
-   */
-  export type MessageUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Message
-     */
-    select?: MessageSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Message
-     */
-    omit?: MessageOmit<ExtArgs> | null
-    /**
-     * The data used to update Messages.
-     */
-    data: XOR<MessageUpdateManyMutationInput, MessageUncheckedUpdateManyInput>
-    /**
-     * Filter which Messages to update
-     */
-    where?: MessageWhereInput
-    /**
-     * Limit how many Messages to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MessageIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -9801,6 +9142,34 @@ export namespace Prisma {
      * Limit how many Messages to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Message findRaw
+   */
+  export type MessageFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Message aggregateRaw
+   */
+  export type MessageAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
   }
 
   /**
@@ -9998,27 +9367,7 @@ export namespace Prisma {
     course?: boolean | CourseDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["announcement"]>
 
-  export type AnnouncementSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    title?: boolean
-    content?: boolean
-    createdAt?: boolean
-    authorId?: boolean
-    courseId?: boolean
-    author?: boolean | UserDefaultArgs<ExtArgs>
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["announcement"]>
 
-  export type AnnouncementSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    title?: boolean
-    content?: boolean
-    createdAt?: boolean
-    authorId?: boolean
-    courseId?: boolean
-    author?: boolean | UserDefaultArgs<ExtArgs>
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["announcement"]>
 
   export type AnnouncementSelectScalar = {
     id?: boolean
@@ -10031,14 +9380,6 @@ export namespace Prisma {
 
   export type AnnouncementOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "content" | "createdAt" | "authorId" | "courseId", ExtArgs["result"]["announcement"]>
   export type AnnouncementInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    author?: boolean | UserDefaultArgs<ExtArgs>
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-  }
-  export type AnnouncementIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    author?: boolean | UserDefaultArgs<ExtArgs>
-    course?: boolean | CourseDefaultArgs<ExtArgs>
-  }
-  export type AnnouncementIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     author?: boolean | UserDefaultArgs<ExtArgs>
     course?: boolean | CourseDefaultArgs<ExtArgs>
   }
@@ -10174,30 +9515,6 @@ export namespace Prisma {
     createMany<T extends AnnouncementCreateManyArgs>(args?: SelectSubset<T, AnnouncementCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many Announcements and returns the data saved in the database.
-     * @param {AnnouncementCreateManyAndReturnArgs} args - Arguments to create many Announcements.
-     * @example
-     * // Create many Announcements
-     * const announcement = await prisma.announcement.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Announcements and only return the `id`
-     * const announcementWithIdOnly = await prisma.announcement.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends AnnouncementCreateManyAndReturnArgs>(args?: SelectSubset<T, AnnouncementCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnnouncementPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Delete a Announcement.
      * @param {AnnouncementDeleteArgs} args - Arguments to delete one Announcement.
      * @example
@@ -10262,36 +9579,6 @@ export namespace Prisma {
     updateMany<T extends AnnouncementUpdateManyArgs>(args: SelectSubset<T, AnnouncementUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more Announcements and returns the data updated in the database.
-     * @param {AnnouncementUpdateManyAndReturnArgs} args - Arguments to update many Announcements.
-     * @example
-     * // Update many Announcements
-     * const announcement = await prisma.announcement.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Announcements and only return the `id`
-     * const announcementWithIdOnly = await prisma.announcement.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends AnnouncementUpdateManyAndReturnArgs>(args: SelectSubset<T, AnnouncementUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnnouncementPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Create or update one Announcement.
      * @param {AnnouncementUpsertArgs} args - Arguments to update or create a Announcement.
      * @example
@@ -10309,6 +9596,29 @@ export namespace Prisma {
      * })
      */
     upsert<T extends AnnouncementUpsertArgs>(args: SelectSubset<T, AnnouncementUpsertArgs<ExtArgs>>): Prisma__AnnouncementClient<$Result.GetResult<Prisma.$AnnouncementPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Announcements that matches the filter.
+     * @param {AnnouncementFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const announcement = await prisma.announcement.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: AnnouncementFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a Announcement.
+     * @param {AnnouncementAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const announcement = await prisma.announcement.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: AnnouncementAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
@@ -10716,30 +10026,6 @@ export namespace Prisma {
      * The data used to create many Announcements.
      */
     data: AnnouncementCreateManyInput | AnnouncementCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Announcement createManyAndReturn
-   */
-  export type AnnouncementCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Announcement
-     */
-    select?: AnnouncementSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Announcement
-     */
-    omit?: AnnouncementOmit<ExtArgs> | null
-    /**
-     * The data used to create many Announcements.
-     */
-    data: AnnouncementCreateManyInput | AnnouncementCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AnnouncementIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -10784,36 +10070,6 @@ export namespace Prisma {
      * Limit how many Announcements to update.
      */
     limit?: number
-  }
-
-  /**
-   * Announcement updateManyAndReturn
-   */
-  export type AnnouncementUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Announcement
-     */
-    select?: AnnouncementSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Announcement
-     */
-    omit?: AnnouncementOmit<ExtArgs> | null
-    /**
-     * The data used to update Announcements.
-     */
-    data: XOR<AnnouncementUpdateManyMutationInput, AnnouncementUncheckedUpdateManyInput>
-    /**
-     * Filter which Announcements to update
-     */
-    where?: AnnouncementWhereInput
-    /**
-     * Limit how many Announcements to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AnnouncementIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -10880,6 +10136,34 @@ export namespace Prisma {
      * Limit how many Announcements to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Announcement findRaw
+   */
+  export type AnnouncementFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * Announcement aggregateRaw
+   */
+  export type AnnouncementAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
   }
 
   /**
@@ -11121,25 +10405,7 @@ export namespace Prisma {
     courseId?: boolean
   }, ExtArgs["result"]["studentProgress"]>
 
-  export type StudentProgressSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    completedAssignments?: boolean
-    totalAssignments?: boolean
-    overallGrade?: boolean
-    lastUpdated?: boolean
-    userId?: boolean
-    courseId?: boolean
-  }, ExtArgs["result"]["studentProgress"]>
 
-  export type StudentProgressSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    completedAssignments?: boolean
-    totalAssignments?: boolean
-    overallGrade?: boolean
-    lastUpdated?: boolean
-    userId?: boolean
-    courseId?: boolean
-  }, ExtArgs["result"]["studentProgress"]>
 
   export type StudentProgressSelectScalar = {
     id?: boolean
@@ -11282,30 +10548,6 @@ export namespace Prisma {
     createMany<T extends StudentProgressCreateManyArgs>(args?: SelectSubset<T, StudentProgressCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many StudentProgresses and returns the data saved in the database.
-     * @param {StudentProgressCreateManyAndReturnArgs} args - Arguments to create many StudentProgresses.
-     * @example
-     * // Create many StudentProgresses
-     * const studentProgress = await prisma.studentProgress.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many StudentProgresses and only return the `id`
-     * const studentProgressWithIdOnly = await prisma.studentProgress.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends StudentProgressCreateManyAndReturnArgs>(args?: SelectSubset<T, StudentProgressCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentProgressPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Delete a StudentProgress.
      * @param {StudentProgressDeleteArgs} args - Arguments to delete one StudentProgress.
      * @example
@@ -11370,36 +10612,6 @@ export namespace Prisma {
     updateMany<T extends StudentProgressUpdateManyArgs>(args: SelectSubset<T, StudentProgressUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more StudentProgresses and returns the data updated in the database.
-     * @param {StudentProgressUpdateManyAndReturnArgs} args - Arguments to update many StudentProgresses.
-     * @example
-     * // Update many StudentProgresses
-     * const studentProgress = await prisma.studentProgress.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more StudentProgresses and only return the `id`
-     * const studentProgressWithIdOnly = await prisma.studentProgress.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends StudentProgressUpdateManyAndReturnArgs>(args: SelectSubset<T, StudentProgressUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentProgressPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
      * Create or update one StudentProgress.
      * @param {StudentProgressUpsertArgs} args - Arguments to update or create a StudentProgress.
      * @example
@@ -11417,6 +10629,29 @@ export namespace Prisma {
      * })
      */
     upsert<T extends StudentProgressUpsertArgs>(args: SelectSubset<T, StudentProgressUpsertArgs<ExtArgs>>): Prisma__StudentProgressClient<$Result.GetResult<Prisma.$StudentProgressPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more StudentProgresses that matches the filter.
+     * @param {StudentProgressFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const studentProgress = await prisma.studentProgress.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: StudentProgressFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a StudentProgress.
+     * @param {StudentProgressAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const studentProgress = await prisma.studentProgress.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: StudentProgressAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
@@ -11799,26 +11034,6 @@ export namespace Prisma {
      * The data used to create many StudentProgresses.
      */
     data: StudentProgressCreateManyInput | StudentProgressCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * StudentProgress createManyAndReturn
-   */
-  export type StudentProgressCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentProgress
-     */
-    select?: StudentProgressSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the StudentProgress
-     */
-    omit?: StudentProgressOmit<ExtArgs> | null
-    /**
-     * The data used to create many StudentProgresses.
-     */
-    data: StudentProgressCreateManyInput | StudentProgressCreateManyInput[]
-    skipDuplicates?: boolean
   }
 
   /**
@@ -11847,32 +11062,6 @@ export namespace Prisma {
    * StudentProgress updateMany
    */
   export type StudentProgressUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update StudentProgresses.
-     */
-    data: XOR<StudentProgressUpdateManyMutationInput, StudentProgressUncheckedUpdateManyInput>
-    /**
-     * Filter which StudentProgresses to update
-     */
-    where?: StudentProgressWhereInput
-    /**
-     * Limit how many StudentProgresses to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * StudentProgress updateManyAndReturn
-   */
-  export type StudentProgressUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the StudentProgress
-     */
-    select?: StudentProgressSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the StudentProgress
-     */
-    omit?: StudentProgressOmit<ExtArgs> | null
     /**
      * The data used to update StudentProgresses.
      */
@@ -11946,6 +11135,34 @@ export namespace Prisma {
   }
 
   /**
+   * StudentProgress findRaw
+   */
+  export type StudentProgressFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * StudentProgress aggregateRaw
+   */
+  export type StudentProgressAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
    * StudentProgress without action
    */
   export type StudentProgressDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11963,16 +11180,6 @@ export namespace Prisma {
   /**
    * Enums
    */
-
-  export const TransactionIsolationLevel: {
-    ReadUncommitted: 'ReadUncommitted',
-    ReadCommitted: 'ReadCommitted',
-    RepeatableRead: 'RepeatableRead',
-    Serializable: 'Serializable'
-  };
-
-  export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
-
 
   export const UserScalarFieldEnum: {
     id: 'id',
@@ -12109,14 +11316,6 @@ export namespace Prisma {
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
-  export const NullsOrder: {
-    first: 'first',
-    last: 'last'
-  };
-
-  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
-
-
   /**
    * Field references
    */
@@ -12234,7 +11433,7 @@ export namespace Prisma {
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
-    id?: UuidFilter<"User"> | string
+    id?: StringFilter<"User"> | string
     name?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     emailVerified?: DateTimeNullableFilter<"User"> | Date | string | null
@@ -12255,9 +11454,9 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     email?: SortOrder
-    emailVerified?: SortOrderInput | SortOrder
-    password?: SortOrderInput | SortOrder
-    avatarUrl?: SortOrderInput | SortOrder
+    emailVerified?: SortOrder
+    password?: SortOrder
+    avatarUrl?: SortOrder
     role?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12294,9 +11493,9 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     email?: SortOrder
-    emailVerified?: SortOrderInput | SortOrder
-    password?: SortOrderInput | SortOrder
-    avatarUrl?: SortOrderInput | SortOrder
+    emailVerified?: SortOrder
+    password?: SortOrder
+    avatarUrl?: SortOrder
     role?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12309,7 +11508,7 @@ export namespace Prisma {
     AND?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     OR?: UserScalarWhereWithAggregatesInput[]
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"User"> | string
+    id?: StringWithAggregatesFilter<"User"> | string
     name?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
     emailVerified?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
@@ -12324,14 +11523,14 @@ export namespace Prisma {
     AND?: CourseWhereInput | CourseWhereInput[]
     OR?: CourseWhereInput[]
     NOT?: CourseWhereInput | CourseWhereInput[]
-    id?: UuidFilter<"Course"> | string
+    id?: StringFilter<"Course"> | string
     title?: StringFilter<"Course"> | string
     description?: StringFilter<"Course"> | string
     category?: StringFilter<"Course"> | string
     imageUrl?: StringNullableFilter<"Course"> | string | null
     createdAt?: DateTimeFilter<"Course"> | Date | string
     updatedAt?: DateTimeFilter<"Course"> | Date | string
-    teacherId?: UuidFilter<"Course"> | string
+    teacherId?: StringFilter<"Course"> | string
     announcements?: AnnouncementListRelationFilter
     assignments?: AssignmentListRelationFilter
     teacher?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -12344,7 +11543,7 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     category?: SortOrder
-    imageUrl?: SortOrderInput | SortOrder
+    imageUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     teacherId?: SortOrder
@@ -12366,7 +11565,7 @@ export namespace Prisma {
     imageUrl?: StringNullableFilter<"Course"> | string | null
     createdAt?: DateTimeFilter<"Course"> | Date | string
     updatedAt?: DateTimeFilter<"Course"> | Date | string
-    teacherId?: UuidFilter<"Course"> | string
+    teacherId?: StringFilter<"Course"> | string
     announcements?: AnnouncementListRelationFilter
     assignments?: AssignmentListRelationFilter
     teacher?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -12379,7 +11578,7 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     category?: SortOrder
-    imageUrl?: SortOrderInput | SortOrder
+    imageUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     teacherId?: SortOrder
@@ -12392,26 +11591,26 @@ export namespace Prisma {
     AND?: CourseScalarWhereWithAggregatesInput | CourseScalarWhereWithAggregatesInput[]
     OR?: CourseScalarWhereWithAggregatesInput[]
     NOT?: CourseScalarWhereWithAggregatesInput | CourseScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"Course"> | string
+    id?: StringWithAggregatesFilter<"Course"> | string
     title?: StringWithAggregatesFilter<"Course"> | string
     description?: StringWithAggregatesFilter<"Course"> | string
     category?: StringWithAggregatesFilter<"Course"> | string
     imageUrl?: StringNullableWithAggregatesFilter<"Course"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Course"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Course"> | Date | string
-    teacherId?: UuidWithAggregatesFilter<"Course"> | string
+    teacherId?: StringWithAggregatesFilter<"Course"> | string
   }
 
   export type CourseEnrollmentWhereInput = {
     AND?: CourseEnrollmentWhereInput | CourseEnrollmentWhereInput[]
     OR?: CourseEnrollmentWhereInput[]
     NOT?: CourseEnrollmentWhereInput | CourseEnrollmentWhereInput[]
-    id?: UuidFilter<"CourseEnrollment"> | string
+    id?: StringFilter<"CourseEnrollment"> | string
     enrolledAt?: DateTimeFilter<"CourseEnrollment"> | Date | string
     lastAccessed?: DateTimeFilter<"CourseEnrollment"> | Date | string
     progress?: FloatFilter<"CourseEnrollment"> | number
-    userId?: UuidFilter<"CourseEnrollment"> | string
-    courseId?: UuidFilter<"CourseEnrollment"> | string
+    userId?: StringFilter<"CourseEnrollment"> | string
+    courseId?: StringFilter<"CourseEnrollment"> | string
     course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
@@ -12436,8 +11635,8 @@ export namespace Prisma {
     enrolledAt?: DateTimeFilter<"CourseEnrollment"> | Date | string
     lastAccessed?: DateTimeFilter<"CourseEnrollment"> | Date | string
     progress?: FloatFilter<"CourseEnrollment"> | number
-    userId?: UuidFilter<"CourseEnrollment"> | string
-    courseId?: UuidFilter<"CourseEnrollment"> | string
+    userId?: StringFilter<"CourseEnrollment"> | string
+    courseId?: StringFilter<"CourseEnrollment"> | string
     course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id" | "userId_courseId">
@@ -12460,25 +11659,25 @@ export namespace Prisma {
     AND?: CourseEnrollmentScalarWhereWithAggregatesInput | CourseEnrollmentScalarWhereWithAggregatesInput[]
     OR?: CourseEnrollmentScalarWhereWithAggregatesInput[]
     NOT?: CourseEnrollmentScalarWhereWithAggregatesInput | CourseEnrollmentScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"CourseEnrollment"> | string
+    id?: StringWithAggregatesFilter<"CourseEnrollment"> | string
     enrolledAt?: DateTimeWithAggregatesFilter<"CourseEnrollment"> | Date | string
     lastAccessed?: DateTimeWithAggregatesFilter<"CourseEnrollment"> | Date | string
     progress?: FloatWithAggregatesFilter<"CourseEnrollment"> | number
-    userId?: UuidWithAggregatesFilter<"CourseEnrollment"> | string
-    courseId?: UuidWithAggregatesFilter<"CourseEnrollment"> | string
+    userId?: StringWithAggregatesFilter<"CourseEnrollment"> | string
+    courseId?: StringWithAggregatesFilter<"CourseEnrollment"> | string
   }
 
   export type CourseMaterialWhereInput = {
     AND?: CourseMaterialWhereInput | CourseMaterialWhereInput[]
     OR?: CourseMaterialWhereInput[]
     NOT?: CourseMaterialWhereInput | CourseMaterialWhereInput[]
-    id?: UuidFilter<"CourseMaterial"> | string
+    id?: StringFilter<"CourseMaterial"> | string
     title?: StringFilter<"CourseMaterial"> | string
     type?: EnumMaterialTypeFilter<"CourseMaterial"> | $Enums.MaterialType
     url?: StringNullableFilter<"CourseMaterial"> | string | null
     content?: StringNullableFilter<"CourseMaterial"> | string | null
     uploadedAt?: DateTimeFilter<"CourseMaterial"> | Date | string
-    courseId?: UuidFilter<"CourseMaterial"> | string
+    courseId?: StringFilter<"CourseMaterial"> | string
     course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
   }
 
@@ -12486,8 +11685,8 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     type?: SortOrder
-    url?: SortOrderInput | SortOrder
-    content?: SortOrderInput | SortOrder
+    url?: SortOrder
+    content?: SortOrder
     uploadedAt?: SortOrder
     courseId?: SortOrder
     course?: CourseOrderByWithRelationInput
@@ -12503,7 +11702,7 @@ export namespace Prisma {
     url?: StringNullableFilter<"CourseMaterial"> | string | null
     content?: StringNullableFilter<"CourseMaterial"> | string | null
     uploadedAt?: DateTimeFilter<"CourseMaterial"> | Date | string
-    courseId?: UuidFilter<"CourseMaterial"> | string
+    courseId?: StringFilter<"CourseMaterial"> | string
     course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
   }, "id">
 
@@ -12511,8 +11710,8 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     type?: SortOrder
-    url?: SortOrderInput | SortOrder
-    content?: SortOrderInput | SortOrder
+    url?: SortOrder
+    content?: SortOrder
     uploadedAt?: SortOrder
     courseId?: SortOrder
     _count?: CourseMaterialCountOrderByAggregateInput
@@ -12524,27 +11723,27 @@ export namespace Prisma {
     AND?: CourseMaterialScalarWhereWithAggregatesInput | CourseMaterialScalarWhereWithAggregatesInput[]
     OR?: CourseMaterialScalarWhereWithAggregatesInput[]
     NOT?: CourseMaterialScalarWhereWithAggregatesInput | CourseMaterialScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"CourseMaterial"> | string
+    id?: StringWithAggregatesFilter<"CourseMaterial"> | string
     title?: StringWithAggregatesFilter<"CourseMaterial"> | string
     type?: EnumMaterialTypeWithAggregatesFilter<"CourseMaterial"> | $Enums.MaterialType
     url?: StringNullableWithAggregatesFilter<"CourseMaterial"> | string | null
     content?: StringNullableWithAggregatesFilter<"CourseMaterial"> | string | null
     uploadedAt?: DateTimeWithAggregatesFilter<"CourseMaterial"> | Date | string
-    courseId?: UuidWithAggregatesFilter<"CourseMaterial"> | string
+    courseId?: StringWithAggregatesFilter<"CourseMaterial"> | string
   }
 
   export type AssignmentWhereInput = {
     AND?: AssignmentWhereInput | AssignmentWhereInput[]
     OR?: AssignmentWhereInput[]
     NOT?: AssignmentWhereInput | AssignmentWhereInput[]
-    id?: UuidFilter<"Assignment"> | string
+    id?: StringFilter<"Assignment"> | string
     title?: StringFilter<"Assignment"> | string
     description?: StringFilter<"Assignment"> | string
     dueDate?: DateTimeFilter<"Assignment"> | Date | string
     totalPoints?: IntNullableFilter<"Assignment"> | number | null
     createdAt?: DateTimeFilter<"Assignment"> | Date | string
     updatedAt?: DateTimeFilter<"Assignment"> | Date | string
-    courseId?: UuidFilter<"Assignment"> | string
+    courseId?: StringFilter<"Assignment"> | string
     course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
     submissions?: AssignmentSubmissionListRelationFilter
   }
@@ -12554,7 +11753,7 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     dueDate?: SortOrder
-    totalPoints?: SortOrderInput | SortOrder
+    totalPoints?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     courseId?: SortOrder
@@ -12573,7 +11772,7 @@ export namespace Prisma {
     totalPoints?: IntNullableFilter<"Assignment"> | number | null
     createdAt?: DateTimeFilter<"Assignment"> | Date | string
     updatedAt?: DateTimeFilter<"Assignment"> | Date | string
-    courseId?: UuidFilter<"Assignment"> | string
+    courseId?: StringFilter<"Assignment"> | string
     course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
     submissions?: AssignmentSubmissionListRelationFilter
   }, "id">
@@ -12583,7 +11782,7 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     dueDate?: SortOrder
-    totalPoints?: SortOrderInput | SortOrder
+    totalPoints?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     courseId?: SortOrder
@@ -12598,28 +11797,28 @@ export namespace Prisma {
     AND?: AssignmentScalarWhereWithAggregatesInput | AssignmentScalarWhereWithAggregatesInput[]
     OR?: AssignmentScalarWhereWithAggregatesInput[]
     NOT?: AssignmentScalarWhereWithAggregatesInput | AssignmentScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"Assignment"> | string
+    id?: StringWithAggregatesFilter<"Assignment"> | string
     title?: StringWithAggregatesFilter<"Assignment"> | string
     description?: StringWithAggregatesFilter<"Assignment"> | string
     dueDate?: DateTimeWithAggregatesFilter<"Assignment"> | Date | string
     totalPoints?: IntNullableWithAggregatesFilter<"Assignment"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"Assignment"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Assignment"> | Date | string
-    courseId?: UuidWithAggregatesFilter<"Assignment"> | string
+    courseId?: StringWithAggregatesFilter<"Assignment"> | string
   }
 
   export type AssignmentSubmissionWhereInput = {
     AND?: AssignmentSubmissionWhereInput | AssignmentSubmissionWhereInput[]
     OR?: AssignmentSubmissionWhereInput[]
     NOT?: AssignmentSubmissionWhereInput | AssignmentSubmissionWhereInput[]
-    id?: UuidFilter<"AssignmentSubmission"> | string
+    id?: StringFilter<"AssignmentSubmission"> | string
     submittedAt?: DateTimeFilter<"AssignmentSubmission"> | Date | string
     grade?: StringNullableFilter<"AssignmentSubmission"> | string | null
     status?: EnumSubmissionStatusFilter<"AssignmentSubmission"> | $Enums.SubmissionStatus
     content?: StringNullableFilter<"AssignmentSubmission"> | string | null
     feedback?: StringNullableFilter<"AssignmentSubmission"> | string | null
-    assignmentId?: UuidFilter<"AssignmentSubmission"> | string
-    studentId?: UuidFilter<"AssignmentSubmission"> | string
+    assignmentId?: StringFilter<"AssignmentSubmission"> | string
+    studentId?: StringFilter<"AssignmentSubmission"> | string
     assignment?: XOR<AssignmentScalarRelationFilter, AssignmentWhereInput>
     student?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
@@ -12627,10 +11826,10 @@ export namespace Prisma {
   export type AssignmentSubmissionOrderByWithRelationInput = {
     id?: SortOrder
     submittedAt?: SortOrder
-    grade?: SortOrderInput | SortOrder
+    grade?: SortOrder
     status?: SortOrder
-    content?: SortOrderInput | SortOrder
-    feedback?: SortOrderInput | SortOrder
+    content?: SortOrder
+    feedback?: SortOrder
     assignmentId?: SortOrder
     studentId?: SortOrder
     assignment?: AssignmentOrderByWithRelationInput
@@ -12648,8 +11847,8 @@ export namespace Prisma {
     status?: EnumSubmissionStatusFilter<"AssignmentSubmission"> | $Enums.SubmissionStatus
     content?: StringNullableFilter<"AssignmentSubmission"> | string | null
     feedback?: StringNullableFilter<"AssignmentSubmission"> | string | null
-    assignmentId?: UuidFilter<"AssignmentSubmission"> | string
-    studentId?: UuidFilter<"AssignmentSubmission"> | string
+    assignmentId?: StringFilter<"AssignmentSubmission"> | string
+    studentId?: StringFilter<"AssignmentSubmission"> | string
     assignment?: XOR<AssignmentScalarRelationFilter, AssignmentWhereInput>
     student?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id" | "assignmentId_studentId">
@@ -12657,10 +11856,10 @@ export namespace Prisma {
   export type AssignmentSubmissionOrderByWithAggregationInput = {
     id?: SortOrder
     submittedAt?: SortOrder
-    grade?: SortOrderInput | SortOrder
+    grade?: SortOrder
     status?: SortOrder
-    content?: SortOrderInput | SortOrder
-    feedback?: SortOrderInput | SortOrder
+    content?: SortOrder
+    feedback?: SortOrder
     assignmentId?: SortOrder
     studentId?: SortOrder
     _count?: AssignmentSubmissionCountOrderByAggregateInput
@@ -12672,26 +11871,26 @@ export namespace Prisma {
     AND?: AssignmentSubmissionScalarWhereWithAggregatesInput | AssignmentSubmissionScalarWhereWithAggregatesInput[]
     OR?: AssignmentSubmissionScalarWhereWithAggregatesInput[]
     NOT?: AssignmentSubmissionScalarWhereWithAggregatesInput | AssignmentSubmissionScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"AssignmentSubmission"> | string
+    id?: StringWithAggregatesFilter<"AssignmentSubmission"> | string
     submittedAt?: DateTimeWithAggregatesFilter<"AssignmentSubmission"> | Date | string
     grade?: StringNullableWithAggregatesFilter<"AssignmentSubmission"> | string | null
     status?: EnumSubmissionStatusWithAggregatesFilter<"AssignmentSubmission"> | $Enums.SubmissionStatus
     content?: StringNullableWithAggregatesFilter<"AssignmentSubmission"> | string | null
     feedback?: StringNullableWithAggregatesFilter<"AssignmentSubmission"> | string | null
-    assignmentId?: UuidWithAggregatesFilter<"AssignmentSubmission"> | string
-    studentId?: UuidWithAggregatesFilter<"AssignmentSubmission"> | string
+    assignmentId?: StringWithAggregatesFilter<"AssignmentSubmission"> | string
+    studentId?: StringWithAggregatesFilter<"AssignmentSubmission"> | string
   }
 
   export type MessageWhereInput = {
     AND?: MessageWhereInput | MessageWhereInput[]
     OR?: MessageWhereInput[]
     NOT?: MessageWhereInput | MessageWhereInput[]
-    id?: UuidFilter<"Message"> | string
+    id?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
     sentAt?: DateTimeFilter<"Message"> | Date | string
     isRead?: BoolFilter<"Message"> | boolean
-    senderId?: UuidFilter<"Message"> | string
-    receiverId?: UuidFilter<"Message"> | string
+    senderId?: StringFilter<"Message"> | string
+    receiverId?: StringFilter<"Message"> | string
     receiver?: XOR<UserScalarRelationFilter, UserWhereInput>
     sender?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
@@ -12715,8 +11914,8 @@ export namespace Prisma {
     content?: StringFilter<"Message"> | string
     sentAt?: DateTimeFilter<"Message"> | Date | string
     isRead?: BoolFilter<"Message"> | boolean
-    senderId?: UuidFilter<"Message"> | string
-    receiverId?: UuidFilter<"Message"> | string
+    senderId?: StringFilter<"Message"> | string
+    receiverId?: StringFilter<"Message"> | string
     receiver?: XOR<UserScalarRelationFilter, UserWhereInput>
     sender?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
@@ -12737,24 +11936,24 @@ export namespace Prisma {
     AND?: MessageScalarWhereWithAggregatesInput | MessageScalarWhereWithAggregatesInput[]
     OR?: MessageScalarWhereWithAggregatesInput[]
     NOT?: MessageScalarWhereWithAggregatesInput | MessageScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"Message"> | string
+    id?: StringWithAggregatesFilter<"Message"> | string
     content?: StringWithAggregatesFilter<"Message"> | string
     sentAt?: DateTimeWithAggregatesFilter<"Message"> | Date | string
     isRead?: BoolWithAggregatesFilter<"Message"> | boolean
-    senderId?: UuidWithAggregatesFilter<"Message"> | string
-    receiverId?: UuidWithAggregatesFilter<"Message"> | string
+    senderId?: StringWithAggregatesFilter<"Message"> | string
+    receiverId?: StringWithAggregatesFilter<"Message"> | string
   }
 
   export type AnnouncementWhereInput = {
     AND?: AnnouncementWhereInput | AnnouncementWhereInput[]
     OR?: AnnouncementWhereInput[]
     NOT?: AnnouncementWhereInput | AnnouncementWhereInput[]
-    id?: UuidFilter<"Announcement"> | string
+    id?: StringFilter<"Announcement"> | string
     title?: StringFilter<"Announcement"> | string
     content?: StringFilter<"Announcement"> | string
     createdAt?: DateTimeFilter<"Announcement"> | Date | string
-    authorId?: UuidFilter<"Announcement"> | string
-    courseId?: UuidFilter<"Announcement"> | string
+    authorId?: StringFilter<"Announcement"> | string
+    courseId?: StringFilter<"Announcement"> | string
     author?: XOR<UserScalarRelationFilter, UserWhereInput>
     course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
   }
@@ -12778,8 +11977,8 @@ export namespace Prisma {
     title?: StringFilter<"Announcement"> | string
     content?: StringFilter<"Announcement"> | string
     createdAt?: DateTimeFilter<"Announcement"> | Date | string
-    authorId?: UuidFilter<"Announcement"> | string
-    courseId?: UuidFilter<"Announcement"> | string
+    authorId?: StringFilter<"Announcement"> | string
+    courseId?: StringFilter<"Announcement"> | string
     author?: XOR<UserScalarRelationFilter, UserWhereInput>
     course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
   }, "id">
@@ -12800,24 +11999,24 @@ export namespace Prisma {
     AND?: AnnouncementScalarWhereWithAggregatesInput | AnnouncementScalarWhereWithAggregatesInput[]
     OR?: AnnouncementScalarWhereWithAggregatesInput[]
     NOT?: AnnouncementScalarWhereWithAggregatesInput | AnnouncementScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"Announcement"> | string
+    id?: StringWithAggregatesFilter<"Announcement"> | string
     title?: StringWithAggregatesFilter<"Announcement"> | string
     content?: StringWithAggregatesFilter<"Announcement"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Announcement"> | Date | string
-    authorId?: UuidWithAggregatesFilter<"Announcement"> | string
-    courseId?: UuidWithAggregatesFilter<"Announcement"> | string
+    authorId?: StringWithAggregatesFilter<"Announcement"> | string
+    courseId?: StringWithAggregatesFilter<"Announcement"> | string
   }
 
   export type StudentProgressWhereInput = {
     AND?: StudentProgressWhereInput | StudentProgressWhereInput[]
     OR?: StudentProgressWhereInput[]
     NOT?: StudentProgressWhereInput | StudentProgressWhereInput[]
-    id?: UuidFilter<"StudentProgress"> | string
+    id?: StringFilter<"StudentProgress"> | string
     completedAssignments?: IntFilter<"StudentProgress"> | number
     totalAssignments?: IntFilter<"StudentProgress"> | number
     overallGrade?: StringNullableFilter<"StudentProgress"> | string | null
     lastUpdated?: DateTimeFilter<"StudentProgress"> | Date | string
-    userId?: UuidFilter<"StudentProgress"> | string
+    userId?: StringFilter<"StudentProgress"> | string
     courseId?: StringFilter<"StudentProgress"> | string
   }
 
@@ -12825,7 +12024,7 @@ export namespace Prisma {
     id?: SortOrder
     completedAssignments?: SortOrder
     totalAssignments?: SortOrder
-    overallGrade?: SortOrderInput | SortOrder
+    overallGrade?: SortOrder
     lastUpdated?: SortOrder
     userId?: SortOrder
     courseId?: SortOrder
@@ -12849,7 +12048,7 @@ export namespace Prisma {
     id?: SortOrder
     completedAssignments?: SortOrder
     totalAssignments?: SortOrder
-    overallGrade?: SortOrderInput | SortOrder
+    overallGrade?: SortOrder
     lastUpdated?: SortOrder
     userId?: SortOrder
     courseId?: SortOrder
@@ -12864,12 +12063,12 @@ export namespace Prisma {
     AND?: StudentProgressScalarWhereWithAggregatesInput | StudentProgressScalarWhereWithAggregatesInput[]
     OR?: StudentProgressScalarWhereWithAggregatesInput[]
     NOT?: StudentProgressScalarWhereWithAggregatesInput | StudentProgressScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<"StudentProgress"> | string
+    id?: StringWithAggregatesFilter<"StudentProgress"> | string
     completedAssignments?: IntWithAggregatesFilter<"StudentProgress"> | number
     totalAssignments?: IntWithAggregatesFilter<"StudentProgress"> | number
     overallGrade?: StringNullableWithAggregatesFilter<"StudentProgress"> | string | null
     lastUpdated?: DateTimeWithAggregatesFilter<"StudentProgress"> | Date | string
-    userId?: UuidWithAggregatesFilter<"StudentProgress"> | string
+    userId?: StringWithAggregatesFilter<"StudentProgress"> | string
     courseId?: StringWithAggregatesFilter<"StudentProgress"> | string
   }
 
@@ -12910,7 +12109,6 @@ export namespace Prisma {
   }
 
   export type UserUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -12928,7 +12126,6 @@ export namespace Prisma {
   }
 
   export type UserUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -12958,7 +12155,6 @@ export namespace Prisma {
   }
 
   export type UserUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -12970,7 +12166,6 @@ export namespace Prisma {
   }
 
   export type UserUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -13012,7 +12207,6 @@ export namespace Prisma {
   }
 
   export type CourseUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -13027,7 +12221,6 @@ export namespace Prisma {
   }
 
   export type CourseUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -13053,7 +12246,6 @@ export namespace Prisma {
   }
 
   export type CourseUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -13063,7 +12255,6 @@ export namespace Prisma {
   }
 
   export type CourseUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -13092,7 +12283,6 @@ export namespace Prisma {
   }
 
   export type CourseEnrollmentUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastAccessed?: DateTimeFieldUpdateOperationsInput | Date | string
     progress?: FloatFieldUpdateOperationsInput | number
@@ -13101,7 +12291,6 @@ export namespace Prisma {
   }
 
   export type CourseEnrollmentUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastAccessed?: DateTimeFieldUpdateOperationsInput | Date | string
     progress?: FloatFieldUpdateOperationsInput | number
@@ -13119,14 +12308,12 @@ export namespace Prisma {
   }
 
   export type CourseEnrollmentUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastAccessed?: DateTimeFieldUpdateOperationsInput | Date | string
     progress?: FloatFieldUpdateOperationsInput | number
   }
 
   export type CourseEnrollmentUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastAccessed?: DateTimeFieldUpdateOperationsInput | Date | string
     progress?: FloatFieldUpdateOperationsInput | number
@@ -13155,7 +12342,6 @@ export namespace Prisma {
   }
 
   export type CourseMaterialUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13165,7 +12351,6 @@ export namespace Prisma {
   }
 
   export type CourseMaterialUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13185,7 +12370,6 @@ export namespace Prisma {
   }
 
   export type CourseMaterialUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13194,7 +12378,6 @@ export namespace Prisma {
   }
 
   export type CourseMaterialUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13228,7 +12411,6 @@ export namespace Prisma {
   }
 
   export type AssignmentUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13240,7 +12422,6 @@ export namespace Prisma {
   }
 
   export type AssignmentUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13263,7 +12444,6 @@ export namespace Prisma {
   }
 
   export type AssignmentUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13273,7 +12453,6 @@ export namespace Prisma {
   }
 
   export type AssignmentUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13306,7 +12485,6 @@ export namespace Prisma {
   }
 
   export type AssignmentSubmissionUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     grade?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSubmissionStatusFieldUpdateOperationsInput | $Enums.SubmissionStatus
@@ -13317,7 +12495,6 @@ export namespace Prisma {
   }
 
   export type AssignmentSubmissionUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     grade?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSubmissionStatusFieldUpdateOperationsInput | $Enums.SubmissionStatus
@@ -13339,7 +12516,6 @@ export namespace Prisma {
   }
 
   export type AssignmentSubmissionUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     grade?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSubmissionStatusFieldUpdateOperationsInput | $Enums.SubmissionStatus
@@ -13348,7 +12524,6 @@ export namespace Prisma {
   }
 
   export type AssignmentSubmissionUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     grade?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSubmissionStatusFieldUpdateOperationsInput | $Enums.SubmissionStatus
@@ -13377,7 +12552,6 @@ export namespace Prisma {
   }
 
   export type MessageUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -13386,7 +12560,6 @@ export namespace Prisma {
   }
 
   export type MessageUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -13404,14 +12577,12 @@ export namespace Prisma {
   }
 
   export type MessageUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type MessageUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -13438,7 +12609,6 @@ export namespace Prisma {
   }
 
   export type AnnouncementUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13447,7 +12617,6 @@ export namespace Prisma {
   }
 
   export type AnnouncementUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13465,14 +12634,12 @@ export namespace Prisma {
   }
 
   export type AnnouncementUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AnnouncementUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13501,7 +12668,6 @@ export namespace Prisma {
   }
 
   export type StudentProgressUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     completedAssignments?: IntFieldUpdateOperationsInput | number
     totalAssignments?: IntFieldUpdateOperationsInput | number
     overallGrade?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13511,7 +12677,6 @@ export namespace Prisma {
   }
 
   export type StudentProgressUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
     completedAssignments?: IntFieldUpdateOperationsInput | number
     totalAssignments?: IntFieldUpdateOperationsInput | number
     overallGrade?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13531,7 +12696,6 @@ export namespace Prisma {
   }
 
   export type StudentProgressUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
     completedAssignments?: IntFieldUpdateOperationsInput | number
     totalAssignments?: IntFieldUpdateOperationsInput | number
     overallGrade?: NullableStringFieldUpdateOperationsInput | string | null
@@ -13541,25 +12705,12 @@ export namespace Prisma {
   }
 
   export type StudentProgressUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
     completedAssignments?: IntFieldUpdateOperationsInput | number
     totalAssignments?: IntFieldUpdateOperationsInput | number
     overallGrade?: NullableStringFieldUpdateOperationsInput | string | null
     lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     courseId?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type UuidFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel>
-    in?: string[] | ListStringFieldRefInput<$PrismaModel>
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedUuidFilter<$PrismaModel> | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -13586,6 +12737,7 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+    isSet?: boolean
   }
 
   export type StringNullableFilter<$PrismaModel = never> = {
@@ -13601,6 +12753,7 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     mode?: QueryMode
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+    isSet?: boolean
   }
 
   export type EnumUserRoleFilter<$PrismaModel = never> = {
@@ -13649,11 +12802,6 @@ export namespace Prisma {
     every?: MessageWhereInput
     some?: MessageWhereInput
     none?: MessageWhereInput
-  }
-
-  export type SortOrderInput = {
-    sort: SortOrder
-    nulls?: NullsOrder
   }
 
   export type AnnouncementOrderByRelationAggregateInput = {
@@ -13712,21 +12860,6 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type UuidWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel>
-    in?: string[] | ListStringFieldRefInput<$PrismaModel>
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedUuidWithAggregatesFilter<$PrismaModel> | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedStringFilter<$PrismaModel>
-    _max?: NestedStringFilter<$PrismaModel>
-  }
-
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -13757,6 +12890,7 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -13775,6 +12909,7 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type EnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -13987,6 +13122,7 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    isSet?: boolean
   }
 
   export type AssignmentCountOrderByAggregateInput = {
@@ -14044,6 +13180,7 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type EnumSubmissionStatusFilter<$PrismaModel = never> = {
@@ -14335,10 +13472,12 @@ export namespace Prisma {
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
+    unset?: boolean
   }
 
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+    unset?: boolean
   }
 
   export type EnumUserRoleFieldUpdateOperationsInput = {
@@ -14779,6 +13918,7 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+    unset?: boolean
   }
 
   export type CourseUpdateOneRequiredWithoutAssignmentsNestedInput = {
@@ -14917,17 +14057,6 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type NestedUuidFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel>
-    in?: string[] | ListStringFieldRefInput<$PrismaModel>
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedUuidFilter<$PrismaModel> | string
-  }
-
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -14951,6 +14080,7 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+    isSet?: boolean
   }
 
   export type NestedStringNullableFilter<$PrismaModel = never> = {
@@ -14965,6 +14095,7 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+    isSet?: boolean
   }
 
   export type NestedEnumUserRoleFilter<$PrismaModel = never> = {
@@ -14985,31 +14116,6 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
-  export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel>
-    in?: string[] | ListStringFieldRefInput<$PrismaModel>
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedUuidWithAggregatesFilter<$PrismaModel> | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedStringFilter<$PrismaModel>
-    _max?: NestedStringFilter<$PrismaModel>
-  }
-
-  export type NestedIntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
-  }
-
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -15027,6 +14133,17 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -15039,6 +14156,7 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type NestedIntNullableFilter<$PrismaModel = never> = {
@@ -15050,6 +14168,7 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    isSet?: boolean
   }
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -15067,6 +14186,7 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type NestedEnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -15151,6 +14271,7 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
+    isSet?: boolean
   }
 
   export type NestedFloatNullableFilter<$PrismaModel = never> = {
@@ -15162,6 +14283,7 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+    isSet?: boolean
   }
 
   export type NestedEnumSubmissionStatusFilter<$PrismaModel = never> = {
@@ -15233,7 +14355,6 @@ export namespace Prisma {
 
   export type AnnouncementCreateManyAuthorInputEnvelope = {
     data: AnnouncementCreateManyAuthorInput | AnnouncementCreateManyAuthorInput[]
-    skipDuplicates?: boolean
   }
 
   export type AssignmentSubmissionCreateWithoutStudentInput = {
@@ -15263,7 +14384,6 @@ export namespace Prisma {
 
   export type AssignmentSubmissionCreateManyStudentInputEnvelope = {
     data: AssignmentSubmissionCreateManyStudentInput | AssignmentSubmissionCreateManyStudentInput[]
-    skipDuplicates?: boolean
   }
 
   export type CourseCreateWithoutTeacherInput = {
@@ -15301,7 +14421,6 @@ export namespace Prisma {
 
   export type CourseCreateManyTeacherInputEnvelope = {
     data: CourseCreateManyTeacherInput | CourseCreateManyTeacherInput[]
-    skipDuplicates?: boolean
   }
 
   export type CourseEnrollmentCreateWithoutUserInput = {
@@ -15327,7 +14446,6 @@ export namespace Prisma {
 
   export type CourseEnrollmentCreateManyUserInputEnvelope = {
     data: CourseEnrollmentCreateManyUserInput | CourseEnrollmentCreateManyUserInput[]
-    skipDuplicates?: boolean
   }
 
   export type MessageCreateWithoutReceiverInput = {
@@ -15353,7 +14471,6 @@ export namespace Prisma {
 
   export type MessageCreateManyReceiverInputEnvelope = {
     data: MessageCreateManyReceiverInput | MessageCreateManyReceiverInput[]
-    skipDuplicates?: boolean
   }
 
   export type MessageCreateWithoutSenderInput = {
@@ -15379,7 +14496,6 @@ export namespace Prisma {
 
   export type MessageCreateManySenderInputEnvelope = {
     data: MessageCreateManySenderInput | MessageCreateManySenderInput[]
-    skipDuplicates?: boolean
   }
 
   export type AnnouncementUpsertWithWhereUniqueWithoutAuthorInput = {
@@ -15402,12 +14518,12 @@ export namespace Prisma {
     AND?: AnnouncementScalarWhereInput | AnnouncementScalarWhereInput[]
     OR?: AnnouncementScalarWhereInput[]
     NOT?: AnnouncementScalarWhereInput | AnnouncementScalarWhereInput[]
-    id?: UuidFilter<"Announcement"> | string
+    id?: StringFilter<"Announcement"> | string
     title?: StringFilter<"Announcement"> | string
     content?: StringFilter<"Announcement"> | string
     createdAt?: DateTimeFilter<"Announcement"> | Date | string
-    authorId?: UuidFilter<"Announcement"> | string
-    courseId?: UuidFilter<"Announcement"> | string
+    authorId?: StringFilter<"Announcement"> | string
+    courseId?: StringFilter<"Announcement"> | string
   }
 
   export type AssignmentSubmissionUpsertWithWhereUniqueWithoutStudentInput = {
@@ -15430,14 +14546,14 @@ export namespace Prisma {
     AND?: AssignmentSubmissionScalarWhereInput | AssignmentSubmissionScalarWhereInput[]
     OR?: AssignmentSubmissionScalarWhereInput[]
     NOT?: AssignmentSubmissionScalarWhereInput | AssignmentSubmissionScalarWhereInput[]
-    id?: UuidFilter<"AssignmentSubmission"> | string
+    id?: StringFilter<"AssignmentSubmission"> | string
     submittedAt?: DateTimeFilter<"AssignmentSubmission"> | Date | string
     grade?: StringNullableFilter<"AssignmentSubmission"> | string | null
     status?: EnumSubmissionStatusFilter<"AssignmentSubmission"> | $Enums.SubmissionStatus
     content?: StringNullableFilter<"AssignmentSubmission"> | string | null
     feedback?: StringNullableFilter<"AssignmentSubmission"> | string | null
-    assignmentId?: UuidFilter<"AssignmentSubmission"> | string
-    studentId?: UuidFilter<"AssignmentSubmission"> | string
+    assignmentId?: StringFilter<"AssignmentSubmission"> | string
+    studentId?: StringFilter<"AssignmentSubmission"> | string
   }
 
   export type CourseUpsertWithWhereUniqueWithoutTeacherInput = {
@@ -15460,14 +14576,14 @@ export namespace Prisma {
     AND?: CourseScalarWhereInput | CourseScalarWhereInput[]
     OR?: CourseScalarWhereInput[]
     NOT?: CourseScalarWhereInput | CourseScalarWhereInput[]
-    id?: UuidFilter<"Course"> | string
+    id?: StringFilter<"Course"> | string
     title?: StringFilter<"Course"> | string
     description?: StringFilter<"Course"> | string
     category?: StringFilter<"Course"> | string
     imageUrl?: StringNullableFilter<"Course"> | string | null
     createdAt?: DateTimeFilter<"Course"> | Date | string
     updatedAt?: DateTimeFilter<"Course"> | Date | string
-    teacherId?: UuidFilter<"Course"> | string
+    teacherId?: StringFilter<"Course"> | string
   }
 
   export type CourseEnrollmentUpsertWithWhereUniqueWithoutUserInput = {
@@ -15490,12 +14606,12 @@ export namespace Prisma {
     AND?: CourseEnrollmentScalarWhereInput | CourseEnrollmentScalarWhereInput[]
     OR?: CourseEnrollmentScalarWhereInput[]
     NOT?: CourseEnrollmentScalarWhereInput | CourseEnrollmentScalarWhereInput[]
-    id?: UuidFilter<"CourseEnrollment"> | string
+    id?: StringFilter<"CourseEnrollment"> | string
     enrolledAt?: DateTimeFilter<"CourseEnrollment"> | Date | string
     lastAccessed?: DateTimeFilter<"CourseEnrollment"> | Date | string
     progress?: FloatFilter<"CourseEnrollment"> | number
-    userId?: UuidFilter<"CourseEnrollment"> | string
-    courseId?: UuidFilter<"CourseEnrollment"> | string
+    userId?: StringFilter<"CourseEnrollment"> | string
+    courseId?: StringFilter<"CourseEnrollment"> | string
   }
 
   export type MessageUpsertWithWhereUniqueWithoutReceiverInput = {
@@ -15518,12 +14634,12 @@ export namespace Prisma {
     AND?: MessageScalarWhereInput | MessageScalarWhereInput[]
     OR?: MessageScalarWhereInput[]
     NOT?: MessageScalarWhereInput | MessageScalarWhereInput[]
-    id?: UuidFilter<"Message"> | string
+    id?: StringFilter<"Message"> | string
     content?: StringFilter<"Message"> | string
     sentAt?: DateTimeFilter<"Message"> | Date | string
     isRead?: BoolFilter<"Message"> | boolean
-    senderId?: UuidFilter<"Message"> | string
-    receiverId?: UuidFilter<"Message"> | string
+    senderId?: StringFilter<"Message"> | string
+    receiverId?: StringFilter<"Message"> | string
   }
 
   export type MessageUpsertWithWhereUniqueWithoutSenderInput = {
@@ -15565,7 +14681,6 @@ export namespace Prisma {
 
   export type AnnouncementCreateManyCourseInputEnvelope = {
     data: AnnouncementCreateManyCourseInput | AnnouncementCreateManyCourseInput[]
-    skipDuplicates?: boolean
   }
 
   export type AssignmentCreateWithoutCourseInput = {
@@ -15597,7 +14712,6 @@ export namespace Prisma {
 
   export type AssignmentCreateManyCourseInputEnvelope = {
     data: AssignmentCreateManyCourseInput | AssignmentCreateManyCourseInput[]
-    skipDuplicates?: boolean
   }
 
   export type UserCreateWithoutTeacherCoursesInput = {
@@ -15662,7 +14776,6 @@ export namespace Prisma {
 
   export type CourseEnrollmentCreateManyCourseInputEnvelope = {
     data: CourseEnrollmentCreateManyCourseInput | CourseEnrollmentCreateManyCourseInput[]
-    skipDuplicates?: boolean
   }
 
   export type CourseMaterialCreateWithoutCourseInput = {
@@ -15690,7 +14803,6 @@ export namespace Prisma {
 
   export type CourseMaterialCreateManyCourseInputEnvelope = {
     data: CourseMaterialCreateManyCourseInput | CourseMaterialCreateManyCourseInput[]
-    skipDuplicates?: boolean
   }
 
   export type AnnouncementUpsertWithWhereUniqueWithoutCourseInput = {
@@ -15729,14 +14841,14 @@ export namespace Prisma {
     AND?: AssignmentScalarWhereInput | AssignmentScalarWhereInput[]
     OR?: AssignmentScalarWhereInput[]
     NOT?: AssignmentScalarWhereInput | AssignmentScalarWhereInput[]
-    id?: UuidFilter<"Assignment"> | string
+    id?: StringFilter<"Assignment"> | string
     title?: StringFilter<"Assignment"> | string
     description?: StringFilter<"Assignment"> | string
     dueDate?: DateTimeFilter<"Assignment"> | Date | string
     totalPoints?: IntNullableFilter<"Assignment"> | number | null
     createdAt?: DateTimeFilter<"Assignment"> | Date | string
     updatedAt?: DateTimeFilter<"Assignment"> | Date | string
-    courseId?: UuidFilter<"Assignment"> | string
+    courseId?: StringFilter<"Assignment"> | string
   }
 
   export type UserUpsertWithoutTeacherCoursesInput = {
@@ -15751,7 +14863,6 @@ export namespace Prisma {
   }
 
   export type UserUpdateWithoutTeacherCoursesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15768,7 +14879,6 @@ export namespace Prisma {
   }
 
   export type UserUncheckedUpdateWithoutTeacherCoursesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15820,13 +14930,13 @@ export namespace Prisma {
     AND?: CourseMaterialScalarWhereInput | CourseMaterialScalarWhereInput[]
     OR?: CourseMaterialScalarWhereInput[]
     NOT?: CourseMaterialScalarWhereInput | CourseMaterialScalarWhereInput[]
-    id?: UuidFilter<"CourseMaterial"> | string
+    id?: StringFilter<"CourseMaterial"> | string
     title?: StringFilter<"CourseMaterial"> | string
     type?: EnumMaterialTypeFilter<"CourseMaterial"> | $Enums.MaterialType
     url?: StringNullableFilter<"CourseMaterial"> | string | null
     content?: StringNullableFilter<"CourseMaterial"> | string | null
     uploadedAt?: DateTimeFilter<"CourseMaterial"> | Date | string
-    courseId?: UuidFilter<"CourseMaterial"> | string
+    courseId?: StringFilter<"CourseMaterial"> | string
   }
 
   export type CourseCreateWithoutEnrollmentsInput = {
@@ -15913,7 +15023,6 @@ export namespace Prisma {
   }
 
   export type CourseUpdateWithoutEnrollmentsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -15927,7 +15036,6 @@ export namespace Prisma {
   }
 
   export type CourseUncheckedUpdateWithoutEnrollmentsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -15952,7 +15060,6 @@ export namespace Prisma {
   }
 
   export type UserUpdateWithoutEnrolledCoursesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -15969,7 +15076,6 @@ export namespace Prisma {
   }
 
   export type UserUncheckedUpdateWithoutEnrolledCoursesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -16030,7 +15136,6 @@ export namespace Prisma {
   }
 
   export type CourseUpdateWithoutMaterialsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -16044,7 +15149,6 @@ export namespace Prisma {
   }
 
   export type CourseUncheckedUpdateWithoutMaterialsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -16117,7 +15221,6 @@ export namespace Prisma {
 
   export type AssignmentSubmissionCreateManyAssignmentInputEnvelope = {
     data: AssignmentSubmissionCreateManyAssignmentInput | AssignmentSubmissionCreateManyAssignmentInput[]
-    skipDuplicates?: boolean
   }
 
   export type CourseUpsertWithoutAssignmentsInput = {
@@ -16132,7 +15235,6 @@ export namespace Prisma {
   }
 
   export type CourseUpdateWithoutAssignmentsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -16146,7 +15248,6 @@ export namespace Prisma {
   }
 
   export type CourseUncheckedUpdateWithoutAssignmentsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -16253,7 +15354,6 @@ export namespace Prisma {
   }
 
   export type AssignmentUpdateWithoutSubmissionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16264,7 +15364,6 @@ export namespace Prisma {
   }
 
   export type AssignmentUncheckedUpdateWithoutSubmissionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16286,7 +15385,6 @@ export namespace Prisma {
   }
 
   export type UserUpdateWithoutAssignmentSubmissionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -16303,7 +15401,6 @@ export namespace Prisma {
   }
 
   export type UserUncheckedUpdateWithoutAssignmentSubmissionsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -16409,7 +15506,6 @@ export namespace Prisma {
   }
 
   export type UserUpdateWithoutReceivedMessagesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -16426,7 +15522,6 @@ export namespace Prisma {
   }
 
   export type UserUncheckedUpdateWithoutReceivedMessagesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -16454,7 +15549,6 @@ export namespace Prisma {
   }
 
   export type UserUpdateWithoutSentMessagesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -16471,7 +15565,6 @@ export namespace Prisma {
   }
 
   export type UserUncheckedUpdateWithoutSentMessagesInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -16571,7 +15664,6 @@ export namespace Prisma {
   }
 
   export type UserUpdateWithoutAnnouncementsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -16588,7 +15680,6 @@ export namespace Prisma {
   }
 
   export type UserUncheckedUpdateWithoutAnnouncementsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -16616,7 +15707,6 @@ export namespace Prisma {
   }
 
   export type CourseUpdateWithoutAnnouncementsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -16630,7 +15720,6 @@ export namespace Prisma {
   }
 
   export type CourseUncheckedUpdateWithoutAnnouncementsInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -16696,7 +15785,6 @@ export namespace Prisma {
   }
 
   export type AnnouncementUpdateWithoutAuthorInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16704,7 +15792,6 @@ export namespace Prisma {
   }
 
   export type AnnouncementUncheckedUpdateWithoutAuthorInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16712,7 +15799,6 @@ export namespace Prisma {
   }
 
   export type AnnouncementUncheckedUpdateManyWithoutAuthorInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16720,7 +15806,6 @@ export namespace Prisma {
   }
 
   export type AssignmentSubmissionUpdateWithoutStudentInput = {
-    id?: StringFieldUpdateOperationsInput | string
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     grade?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSubmissionStatusFieldUpdateOperationsInput | $Enums.SubmissionStatus
@@ -16730,7 +15815,6 @@ export namespace Prisma {
   }
 
   export type AssignmentSubmissionUncheckedUpdateWithoutStudentInput = {
-    id?: StringFieldUpdateOperationsInput | string
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     grade?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSubmissionStatusFieldUpdateOperationsInput | $Enums.SubmissionStatus
@@ -16740,7 +15824,6 @@ export namespace Prisma {
   }
 
   export type AssignmentSubmissionUncheckedUpdateManyWithoutStudentInput = {
-    id?: StringFieldUpdateOperationsInput | string
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     grade?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSubmissionStatusFieldUpdateOperationsInput | $Enums.SubmissionStatus
@@ -16750,7 +15833,6 @@ export namespace Prisma {
   }
 
   export type CourseUpdateWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -16764,7 +15846,6 @@ export namespace Prisma {
   }
 
   export type CourseUncheckedUpdateWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -16778,7 +15859,6 @@ export namespace Prisma {
   }
 
   export type CourseUncheckedUpdateManyWithoutTeacherInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
@@ -16788,7 +15868,6 @@ export namespace Prisma {
   }
 
   export type CourseEnrollmentUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastAccessed?: DateTimeFieldUpdateOperationsInput | Date | string
     progress?: FloatFieldUpdateOperationsInput | number
@@ -16796,7 +15875,6 @@ export namespace Prisma {
   }
 
   export type CourseEnrollmentUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastAccessed?: DateTimeFieldUpdateOperationsInput | Date | string
     progress?: FloatFieldUpdateOperationsInput | number
@@ -16804,7 +15882,6 @@ export namespace Prisma {
   }
 
   export type CourseEnrollmentUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastAccessed?: DateTimeFieldUpdateOperationsInput | Date | string
     progress?: FloatFieldUpdateOperationsInput | number
@@ -16812,7 +15889,6 @@ export namespace Prisma {
   }
 
   export type MessageUpdateWithoutReceiverInput = {
-    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -16820,7 +15896,6 @@ export namespace Prisma {
   }
 
   export type MessageUncheckedUpdateWithoutReceiverInput = {
-    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -16828,7 +15903,6 @@ export namespace Prisma {
   }
 
   export type MessageUncheckedUpdateManyWithoutReceiverInput = {
-    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -16836,7 +15910,6 @@ export namespace Prisma {
   }
 
   export type MessageUpdateWithoutSenderInput = {
-    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -16844,7 +15917,6 @@ export namespace Prisma {
   }
 
   export type MessageUncheckedUpdateWithoutSenderInput = {
-    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -16852,7 +15924,6 @@ export namespace Prisma {
   }
 
   export type MessageUncheckedUpdateManyWithoutSenderInput = {
-    id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
@@ -16895,7 +15966,6 @@ export namespace Prisma {
   }
 
   export type AnnouncementUpdateWithoutCourseInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16903,7 +15973,6 @@ export namespace Prisma {
   }
 
   export type AnnouncementUncheckedUpdateWithoutCourseInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16911,7 +15980,6 @@ export namespace Prisma {
   }
 
   export type AnnouncementUncheckedUpdateManyWithoutCourseInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16919,7 +15987,6 @@ export namespace Prisma {
   }
 
   export type AssignmentUpdateWithoutCourseInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16930,7 +15997,6 @@ export namespace Prisma {
   }
 
   export type AssignmentUncheckedUpdateWithoutCourseInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16941,7 +16007,6 @@ export namespace Prisma {
   }
 
   export type AssignmentUncheckedUpdateManyWithoutCourseInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16951,7 +16016,6 @@ export namespace Prisma {
   }
 
   export type CourseEnrollmentUpdateWithoutCourseInput = {
-    id?: StringFieldUpdateOperationsInput | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastAccessed?: DateTimeFieldUpdateOperationsInput | Date | string
     progress?: FloatFieldUpdateOperationsInput | number
@@ -16959,7 +16023,6 @@ export namespace Prisma {
   }
 
   export type CourseEnrollmentUncheckedUpdateWithoutCourseInput = {
-    id?: StringFieldUpdateOperationsInput | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastAccessed?: DateTimeFieldUpdateOperationsInput | Date | string
     progress?: FloatFieldUpdateOperationsInput | number
@@ -16967,7 +16030,6 @@ export namespace Prisma {
   }
 
   export type CourseEnrollmentUncheckedUpdateManyWithoutCourseInput = {
-    id?: StringFieldUpdateOperationsInput | string
     enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastAccessed?: DateTimeFieldUpdateOperationsInput | Date | string
     progress?: FloatFieldUpdateOperationsInput | number
@@ -16975,7 +16037,6 @@ export namespace Prisma {
   }
 
   export type CourseMaterialUpdateWithoutCourseInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16984,7 +16045,6 @@ export namespace Prisma {
   }
 
   export type CourseMaterialUncheckedUpdateWithoutCourseInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16993,7 +16053,6 @@ export namespace Prisma {
   }
 
   export type CourseMaterialUncheckedUpdateManyWithoutCourseInput = {
-    id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     type?: EnumMaterialTypeFieldUpdateOperationsInput | $Enums.MaterialType
     url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -17012,7 +16071,6 @@ export namespace Prisma {
   }
 
   export type AssignmentSubmissionUpdateWithoutAssignmentInput = {
-    id?: StringFieldUpdateOperationsInput | string
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     grade?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSubmissionStatusFieldUpdateOperationsInput | $Enums.SubmissionStatus
@@ -17022,7 +16080,6 @@ export namespace Prisma {
   }
 
   export type AssignmentSubmissionUncheckedUpdateWithoutAssignmentInput = {
-    id?: StringFieldUpdateOperationsInput | string
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     grade?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSubmissionStatusFieldUpdateOperationsInput | $Enums.SubmissionStatus
@@ -17032,7 +16089,6 @@ export namespace Prisma {
   }
 
   export type AssignmentSubmissionUncheckedUpdateManyWithoutAssignmentInput = {
-    id?: StringFieldUpdateOperationsInput | string
     submittedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     grade?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumSubmissionStatusFieldUpdateOperationsInput | $Enums.SubmissionStatus
