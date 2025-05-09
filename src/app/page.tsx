@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button';
-import { MainNav } from '@/components/layout/main-nav';
+import { Button } from '../components/ui/button';
+import { MainNav } from '../components/layout/main-nav';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CheckCircle, Users, BookCopy, TrendingUp } from 'lucide-react';

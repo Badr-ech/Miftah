@@ -1,13 +1,13 @@
 
-import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MainAppNav } from '@/components/layout/main-app-nav';
-import { getCurrentUser } from '@/lib/auth';
-import type { User, NavItem } from '@/types';
+import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '../../components/ui/sidebar';
+import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
+import { MainAppNav } from '../../components/layout/main-app-nav';
+import { getCurrentUser } from '../../lib/auth';
+import type { User, NavItem } from '../../types';
 import Link from 'next/link';
 import { Home, BookOpen, Users, BarChart3, Settings, LogOut, GraduationCap, Edit3, ShieldCheck, ClipboardList } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ThemeToggleButton } from '@/components/layout/theme-toggle-button';
+import { Button } from '../../components/ui/button';
+import { ThemeToggleButton } from '../../components/layout/theme-toggle-button';
 
 export default async function AppLayout({
   children,

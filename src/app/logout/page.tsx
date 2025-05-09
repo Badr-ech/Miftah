@@ -2,9 +2,9 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { logout as performLogout } from '@/lib/auth';
+import { logout as performLogout } from '../../lib/auth';
 import { Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '../../hooks/use-toast';
 
 export default function LogoutPage() {
   const router = useRouter();

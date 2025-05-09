@@ -1,10 +1,10 @@
 
-import { getCurrentUser } from '@/lib/auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { getCurrentUser } from '../../../../lib/auth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
 import Link from 'next/link';
 import { AlertCircle, BarChart3, Users } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertTitle, AlertDescription } from '../../../../components/ui/alert';
 // Placeholder for chart components if needed later
 // import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 // import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';

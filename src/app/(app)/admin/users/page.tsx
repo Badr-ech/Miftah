@@ -1,13 +1,11 @@
 
-import { getCurrentUser } from '@/lib/auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { getCurrentUser } from '../../../../lib/auth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
 import Link from 'next/link';
 import { AlertCircle, Users } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-// Placeholder for a table or list of users
-// import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-// import { mockUsers } from '@/lib/mock-data'; // Example data
+import { Alert, AlertTitle, AlertDescription } from '../../../../components/ui/alert';
+
 
 export default async function AdminUsersPage() {
   const user = await getCurrentUser();

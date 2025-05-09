@@ -1,12 +1,12 @@
 'use client';
 
-import type { User } from '@/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import type { User } from '../../types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
 import Link from 'next/link';
 import { Users, BookOpen, Settings, ShieldAlert, Activity } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltipContent } from '../../components/ui/chart';
 import { useEffect, useState } from 'react';
 
 interface AdminDashboardProps {
@@ -87,7 +87,7 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
     'primary-cat': { label: 'Primary', color: 'hsl(var(--chart-4))' },
     'middle-cat': { label: 'Middle', color: 'hsl(var(--chart-5))' },
     'secondary-cat': { label: 'Secondary', color: 'hsl(var(--chart-1))' }, // Re-use for variation
-  } satisfies import('@/components/ui/chart').ChartConfig;
+  } satisfies import('../../components/ui/chart').ChartConfig;
 
 
   return (

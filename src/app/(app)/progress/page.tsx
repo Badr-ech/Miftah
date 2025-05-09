@@ -1,12 +1,12 @@
-import { getCurrentUser } from '@/lib/auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
+import { getCurrentUser } from '../../../lib/auth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../../../components/ui/card';
+import { Progress } from '../../../components/ui/progress';
+import { Button } from '../../../components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '../../../components/ui/alert';
 import { AlertCircle, BookOpen, ListChecks, TrendingUp } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../../../components/ui/badge';
 
 // Define types for database responses
 interface CourseProgressDetail {

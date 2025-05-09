@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { UserRole } from '@/types';
-import { login as performLogin, loginWithRole } from '@/lib/auth';
-import { useToast } from '@/hooks/use-toast';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
+import { Label } from '../../components/ui/label';
+import { Input } from '../../components/ui/input';
+import { RadioGroup, RadioGroupItem } from '../../components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import type { UserRole } from '../../types';
+import { login as performLogin, loginWithRole } from '../../lib/auth';
+import { useToast } from '../../hooks/use-toast';
 import { BookOpen, ShieldCheck, User, Users, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import Image from 'next/image';
 

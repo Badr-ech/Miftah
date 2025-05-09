@@ -1,7 +1,7 @@
 'use server';
 
 // @ts-ignore - Ignoring path alias resolution issue
-import type { User, UserRole } from '@/types';
+import type { User, UserRole } from '../types';
 import { cookies } from 'next/headers';
 import { db } from './db';
 

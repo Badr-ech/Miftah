@@ -1,14 +1,14 @@
-import type { Course, CourseMaterial, Assignment } from '@/types';
-import { getCurrentUser } from '@/lib/auth';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import type { Course, CourseMaterial, Assignment } from '../../../../types';
+import { getCurrentUser } from '../../../../lib/auth';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../components/ui/tabs';
 import { FileText, Video, Link as LinkIcon, ListChecks, Edit3, CheckCircle, AlertCircle, Download } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
+import { Badge } from '../../../../components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from "../../../../components/ui/alert";
 
 interface CourseDetailPageProps {
   params: { courseId: string };

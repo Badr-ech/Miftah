@@ -1,11 +1,11 @@
 
-import { getCurrentUser } from '@/lib/auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { getCurrentUser } from '../../../../lib/auth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
 import Link from 'next/link';
 import { AlertCircle, Activity, Server, Database } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
+import { Alert, AlertTitle, AlertDescription } from '../../../../components/ui/alert';
+import { Badge } from '../../../../components/ui/badge';
 
 export default async function AdminHealthPage() {
   const user = await getCurrentUser();

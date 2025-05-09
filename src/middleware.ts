@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 // @ts-ignore - Ignoring path resolution issue with middleware
-import { getServerUser } from '@/lib/server-auth'; // Using path alias as configured in tsconfig.json
+import { getServerUser } from 'lib/server-auth'; // Using path alias as configured in tsconfig.json
 
 // This is a simplified middleware. A real app would use a robust session management library.
 export async function middleware(request: NextRequest) {

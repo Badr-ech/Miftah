@@ -1,13 +1,13 @@
 
-import { mockCourses, mockCourseAssignments } from '@/lib/mock-data';
-import type { Course, Assignment } from '@/types';
-import { getCurrentUser } from '@/lib/auth';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { mockCourses, mockCourseAssignments } from '../../../../../../lib/mock-data';
+import type { Course, Assignment } from '../../../../../../types';
+import { getCurrentUser } from '../../../../../../lib/auth';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../../../../components/ui/card';
+import { Button } from '../../../../../../components/ui/button';
 import Link from 'next/link';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "../../../../../../components/ui/alert";
 import { AlertCircle, CalendarDays, CheckSquare, Edit, FileText, Info } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../../../../../../components/ui/badge';
 
 interface AssignmentDetailPageProps {
   params: {

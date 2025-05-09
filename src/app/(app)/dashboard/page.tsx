@@ -1,12 +1,12 @@
-import { getServerUser } from '@/lib/server-auth';
-import { StudentDashboard } from '@/components/dashboards/student-dashboard';
-import { TeacherDashboard } from '@/components/dashboards/teacher-dashboard';
-import { AdminDashboard } from '@/components/dashboards/admin-dashboard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getServerUser } from '../../../lib/server-auth';
+import { StudentDashboard } from '../../../components/dashboards/student-dashboard';
+import { TeacherDashboard } from '../../../components/dashboards/teacher-dashboard';
+import { AdminDashboard } from '../../../components/dashboards/admin-dashboard';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card';
 import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "../../../components/ui/alert";
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../components/ui/button';
 
 export default async function DashboardPage() {
   const user = await getServerUser();

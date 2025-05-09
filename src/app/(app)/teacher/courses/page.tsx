@@ -1,13 +1,13 @@
 
-import { getCurrentUser } from '@/lib/auth';
-import { mockCourses } from '@/lib/mock-data';
-import type { Course, User } from '@/types';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { getCurrentUser } from '../../../../lib/auth';
+import { mockCourses } from '../../../../lib/mock-data';
+import type { Course, User } from '../../../../types';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlusCircle, Edit3, Eye, AlertCircle } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertTitle, AlertDescription } from '../../../../components/ui/alert';
 
 export default async function TeacherCoursesPage() {
   const user = await getCurrentUser();

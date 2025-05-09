@@ -1,9 +1,9 @@
-import type { Course, CourseCategory } from '@/types';
-import { CourseCard } from '@/components/course-card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from '@/components/ui/input';
+import type { Course, CourseCategory } from '../../../types';
+import { CourseCard } from '../../../components/course-card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
+import { Input } from '../../../components/ui/input';
 import { Search } from 'lucide-react';
-import { CourseFilters } from '@/components/course-filters';
+import { CourseFilters } from '../../../components/course-filters';
 
 interface CoursesPageProps {
   searchParams: {

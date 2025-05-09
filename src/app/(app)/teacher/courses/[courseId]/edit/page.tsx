@@ -1,12 +1,12 @@
-import { getCurrentUser } from '@/lib/auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { getCurrentUser } from '../../../../../../lib/auth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../../../components/ui/card';
+import { Button } from '../../../../../../components/ui/button';
 import Link from 'next/link';
 import { AlertCircle, Edit3 } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertTitle, AlertDescription } from '../../../../../../components/ui/alert';
+import { Input } from '../../../../../../components/ui/input';
+import { Label } from '../../../../../../components/ui/label';
+import { Textarea } from '../../../../../../components/ui/textarea';
 
 interface EditCoursePageProps {
   params: { courseId: string };

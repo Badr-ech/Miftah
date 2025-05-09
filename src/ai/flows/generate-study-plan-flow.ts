@@ -8,9 +8,9 @@
  * - GenerateStudyPlanOutput - The return type for the generateStudyPlan function.
  */
 
-import {ai} from '@/ai/genkit';
-import type { GenerateStudyPlanInput, GenerateStudyPlanOutput } from '@/ai/schemas/study-plan-schemas';
-import { GenerateStudyPlanInputSchema, GenerateStudyPlanOutputSchema } from '@/ai/schemas/study-plan-schemas';
+import {ai} from '../genkit';
+import type { GenerateStudyPlanInput, GenerateStudyPlanOutput } from '../schemas/study-plan-schemas';
+import { GenerateStudyPlanInputSchema, GenerateStudyPlanOutputSchema } from '../schemas/study-plan-schemas';
 
 
 export async function generateStudyPlan(input: GenerateStudyPlanInput): Promise<GenerateStudyPlanOutput> {

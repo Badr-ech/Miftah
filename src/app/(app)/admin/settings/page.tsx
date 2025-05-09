@@ -1,14 +1,10 @@
 
-import { getCurrentUser } from '@/lib/auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { getCurrentUser } from '../../../../lib/auth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
 import Link from 'next/link';
 import { AlertCircle, Settings } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-// Placeholder for form components
-// import { Label } from '@/components/ui/label';
-// import { Input } from '@/components/ui/input';
-// import { Switch } from '@/components/ui/switch';
+import { Alert, AlertTitle, AlertDescription } from '../../../../components/ui/alert';
 
 export default async function AdminSettingsPage() {
   const user = await getCurrentUser();
