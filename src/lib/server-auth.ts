@@ -2,8 +2,7 @@
 
 import type { User, UserRole } from '@/types';
 import { cookies } from 'next/headers';
-// Ensure this path is correct and mockUsers is the Record<UserRole, User> map
-import { mockUsers as roleToUserMap } from './auth'; 
+import { db } from './db';
 
 export async function getUserRoleFromCookies(): Promise<UserRole | null> {
   try {
@@ -43,15 +42,114 @@ export async function setUserRoleCookie(role: UserRole): Promise<void> {
   }
 }
 
-export async function getServerUser(): Promise<User | null> {
-  const role = await getUserRoleFromCookies();
-  console.log(`[server-auth] getServerUser: Role determined from cookies is '${role}'`);
-  
-  if (role && roleToUserMap[role]) {
-    console.log(`[server-auth] getServerUser: Successfully found user '${roleToUserMap[role].name}' for role '${role}'.`);
-    return roleToUserMap[role];
+export async function getUserIdFromCookies(): Promise<string | null> {
+  try {
+    const cookieStore = await cookies();
+    const userIdCookie = cookieStore.get('userId');
+    return userIdCookie?.value || null;
+  } catch (error) {
+    console.error("[server-auth] Error getting user ID from cookies:", error);
+    return null;
   }
-  
-  console.warn(`[server-auth] getServerUser: Role '${role}' not found in roleToUserMap or role is null. Defaulting to student user.`);
-  return roleToUserMap.student; 
+}
+
+export async function setUserCookies(userId: string, role: UserRole): Promise<void> {
+  try {
+    const cookieStore = await cookies();
+    
+    // Set user ID cookie
+    cookieStore.set('userId', userId, { 
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      httpOnly: true, 
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production', 
+    });
+    
+    // Set user role cookie
+    cookieStore.set('userRole', role, { 
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      httpOnly: true, 
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production', 
+    });
+    
+    console.log(`[server-auth] setUserCookies: Set cookies for user ID '${userId}' with role '${role}'`);
+  } catch (error) {
+    console.error("[server-auth] Error setting user cookies:", error);
+  }
+}
+
+export async function getServerUser(): Promise<User | null> {
+  try {
+    const userId = await getUserIdFromCookies();
+    
+    if (userId) {
+      // Fetch user from database
+      const dbUser = await db.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatarUrl: true
+        }
+      });
+      
+      if (dbUser) {
+        // Convert database user to our application's User type
+        const user: User = {
+          id: dbUser.id,
+          name: dbUser.name,
+          email: dbUser.email,
+          role: dbUser.role.toLowerCase() as UserRole, // Convert to lowercase to match our app's UserRole type
+          avatarUrl: dbUser.avatarUrl || undefined
+        };
+        
+        console.log(`[server-auth] getServerUser: Successfully found user '${user.name}' with role '${user.role}'`);
+        return user;
+      }
+    }
+    
+    // If no userId or no user found, fallback to role-based method for backward compatibility
+    const role = await getUserRoleFromCookies();
+      if (role) {
+      // Find a user with the specified role
+      // Cast the role string to match the expected database enum type
+      const dbUser = await db.user.findFirst({
+        where: { role: role.toUpperCase() as any },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatarUrl: true
+        }
+      });
+      
+      if (dbUser) {
+        const user: User = {
+          id: dbUser.id,
+          name: dbUser.name,
+          email: dbUser.email,
+          role: dbUser.role.toLowerCase() as UserRole,
+          avatarUrl: dbUser.avatarUrl || undefined
+        };
+        
+        // Set the userId cookie for future requests
+        await setUserCookies(user.id, user.role);
+        
+        console.log(`[server-auth] getServerUser: Found user by role '${role}': ${user.name}`);
+        return user;
+      }
+    }
+    
+    console.warn('[server-auth] getServerUser: No user found in database, returning null');
+    return null;
+  } catch (error) {
+    console.error("[server-auth] Error in getServerUser:", error);
+    return null;
+  }
 }

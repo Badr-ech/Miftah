@@ -1,5 +1,12 @@
 ﻿name: Miftah CI/CD Pipeline
 
+# Implemented via GitHub Actions to automate:
+# - Build, test, and deploy the Next.js-based educational platform
+# - Install dependencies, run linting and type checks
+# - Deploy to Vercel for production environment
+# - Clean up old deployments automatically
+# - Trigger on each GitHub push to main/master branches
+
 on:
   push:
     branches: [ main, master ]
@@ -7,8 +14,26 @@ on:
     branches: [ main, master ]
 
 jobs:
+  # This job handles building and testing the Next.js application with TypeScript
   build-and-test:
     runs-on: ubuntu-latest
+
+    # Set up PostgreSQL service for tests
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: miftah_test
+        ports:
+          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -22,6 +47,20 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        
+      # Generate Prisma client
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        
+      # Run Prisma validation
+      - name: Validate Prisma Schema
+        run: npx prisma validate
+        
+      # Run Prisma tests with the test database
+      - name: Run Prisma tests
+        run: npx prisma validate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/miftah_test?schema=public
 
       # Restore Next.js cache if available
       - name: Restore Next.js cache
@@ -53,12 +92,13 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL != '' && secrets.NEXT_PUBLIC_API_URL || 'https://api-staging.example.com' }}
           GENKIT_API_KEY: ${{ secrets.GENKIT_API_KEY != '' && secrets.GENKIT_API_KEY || 'dummy-key-for-ci' }}
 
+  # Deploy to Vercel production environment after successful build and test
   deploy:
     needs: build-and-test
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     
-    # Add environment for deployment
+    # Define production environment with deployment URL for easy access
     environment:
       name: production
       url: ${{ steps.deploy-vercel.outputs.preview-url }}
@@ -96,52 +136,107 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           GENKIT_API_KEY: ${{ secrets.GENKIT_API_KEY }}
           
+      # Deploy the Next.js educational platform to Vercel's production environment
       - name: Deploy to Vercel
         id: deploy-vercel
-        uses: amondnet/vercel-action@v25  # Updated to v25
+        uses: amondnet/vercel-action@v25  # Using the latest stable version
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: ./
-          vercel-args: '--prod'
+          vercel-args: '--prod'  # Ensures deployment to production environment
           
+      # Automatically clean up older deployments to maintain a clean environment and reduce costs
       - name: Cleanup old deployments
         if: success()
         run: |
           # Install jq for JSON parsing
           sudo apt-get update && sudo apt-get install -y jq
           
-          # Get list of deployments
+          # Get list of deployments - debug mode with full response
           echo "Fetching deployment list from Vercel..."
-          DEPLOYMENTS=$(curl -s -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
-            "https://api.vercel.com/v6/deployments?projectId=${{ secrets.VERCEL_PROJECT_ID }}&teamId=${{ secrets.VERCEL_ORG_ID }}")
+          DEPLOYMENTS_RESPONSE=$(curl -v -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            "https://api.vercel.com/v6/deployments?projectId=${{ secrets.VERCEL_PROJECT_ID }}&teamId=${{ secrets.VERCEL_ORG_ID }}&limit=100")
           
-          # Extract latest deployment ID (current deployment)
-          LATEST_DEPLOYMENT_ID=$(echo $DEPLOYMENTS | jq -r '.deployments[0].uid')
-          echo "Latest deployment: $LATEST_DEPLOYMENT_ID - Keeping this one"
+          # Check if there was an error getting deployments
+          if echo "$DEPLOYMENTS_RESPONSE" | jq -e '.error' > /dev/null; then
+            ERROR_MESSAGE=$(echo "$DEPLOYMENTS_RESPONSE" | jq -r '.error.message')
+            echo "Error fetching deployments: $ERROR_MESSAGE"
+            echo "API Response: $DEPLOYMENTS_RESPONSE"
+            exit 1
+          fi
           
-          # Count total deployments
-          TOTAL_DEPLOYMENTS=$(echo $DEPLOYMENTS | jq -r '.deployments | length')
-          echo "Total deployments found: $TOTAL_DEPLOYMENTS"
+          # Ensure we have deployments in the response
+          DEPLOYMENTS_COUNT=$(echo "$DEPLOYMENTS_RESPONSE" | jq -r '.deployments | length')
+          if [ "$DEPLOYMENTS_COUNT" -eq 0 ]; then
+            echo "No deployments found to clean up"
+            echo "API Response: $DEPLOYMENTS_RESPONSE"
+            exit 0
+          fi
           
-          # Loop through older deployments (skip the first one which is the latest)
+          echo "Found $DEPLOYMENTS_COUNT deployments in total"
+          
+          # Filter for production deployments only
+          PROD_DEPLOYMENTS=$(echo "$DEPLOYMENTS_RESPONSE" | jq -c '[.deployments[] | select(.target == "production")]')
+          PROD_COUNT=$(echo "$PROD_DEPLOYMENTS" | jq -r 'length')
+          echo "Found $PROD_COUNT production deployments"
+          
+          # Ensure we have at least one deployment
+          if [ "$PROD_COUNT" -lt 1 ]; then
+            echo "No production deployments found to clean up"
+            exit 0
+          fi
+          
+          # Extract latest production deployment ID
+          LATEST_DEPLOYMENT=$(echo "$PROD_DEPLOYMENTS" | jq -r '.[0]')
+          LATEST_DEPLOYMENT_ID=$(echo "$LATEST_DEPLOYMENT" | jq -r '.uid')
+          LATEST_DEPLOYMENT_URL=$(echo "$LATEST_DEPLOYMENT" | jq -r '.url')
+          echo "Latest deployment: $LATEST_DEPLOYMENT_ID ($LATEST_DEPLOYMENT_URL) - Keeping this one"
+          
+          # Skip if there's only one deployment
+          if [ "$PROD_COUNT" -lt 2 ]; then
+            echo "Only one production deployment found. Nothing to clean up."
+            exit 0
+          fi
+          
+          # Try two different API endpoints for deletion (v13 and v6)
           echo "Starting cleanup of older deployments..."
-          echo $DEPLOYMENTS | jq -c '.deployments[1:] | .[]' | while read -r deployment; do
-            DEPLOYMENT_ID=$(echo $deployment | jq -r '.uid')
-            DEPLOYMENT_URL=$(echo $deployment | jq -r '.url')
-            echo "Removing old deployment: $DEPLOYMENT_ID ($DEPLOYMENT_URL)"
+          echo "$PROD_DEPLOYMENTS" | jq -c '.[1:][]' | while read -r deployment; do
+            DEPLOYMENT_ID=$(echo "$deployment" | jq -r '.uid')
+            DEPLOYMENT_URL=$(echo "$deployment" | jq -r '.url')
+            DEPLOYMENT_STATE=$(echo "$deployment" | jq -r '.state')
+            echo "Found old deployment: $DEPLOYMENT_ID ($DEPLOYMENT_URL) - State: $DEPLOYMENT_STATE"
             
-            # Delete the deployment
-            DELETE_RESPONSE=$(curl -s -X DELETE -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            # Try to delete using v13 endpoint
+            echo "Attempting to delete deployment with v13 endpoint..."
+            DELETE_RESPONSE_V13=$(curl -s -X DELETE -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
               "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID?teamId=${{ secrets.VERCEL_ORG_ID }}")
             
-            if echo "$DELETE_RESPONSE" | jq -e '.error' > /dev/null; then
-              ERROR_MESSAGE=$(echo "$DELETE_RESPONSE" | jq -r '.error.message')
-              echo "Error deleting deployment $DEPLOYMENT_ID: $ERROR_MESSAGE"
+            V13_ERROR=$(echo "$DELETE_RESPONSE_V13" | jq -r '.error.message // empty')
+            
+            if [ -z "$V13_ERROR" ]; then
+              echo "Successfully deleted deployment $DEPLOYMENT_ID with v13 endpoint"
+              continue
             else
-              echo "Successfully deleted deployment $DEPLOYMENT_ID"
+              echo "Error with v13 endpoint: $V13_ERROR"
+              
+              # Try v6 endpoint as fallback
+              echo "Attempting to delete deployment with v6 endpoint..."
+              DELETE_RESPONSE_V6=$(curl -s -X DELETE -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+                "https://api.vercel.com/v6/deployments/$DEPLOYMENT_ID?teamId=${{ secrets.VERCEL_ORG_ID }}")
+              
+              V6_ERROR=$(echo "$DELETE_RESPONSE_V6" | jq -r '.error.message // empty')
+              
+              if [ -z "$V6_ERROR" ]; then
+                echo "Successfully deleted deployment $DEPLOYMENT_ID with v6 endpoint"
+              else
+                echo "Error with v6 endpoint: $V6_ERROR"
+                echo "Could not delete deployment $DEPLOYMENT_ID"
+                echo "Full response v13: $DELETE_RESPONSE_V13"
+                echo "Full response v6: $DELETE_RESPONSE_V6"
+              fi
             fi
           done
           
-          echo "Deployment cleanup completed. Only the latest deployment remains."
+          echo "Deployment cleanup completed."

@@ -1,35 +1,83 @@
 'use client';
 
 import type { User } from '@/types';
-import { mockUsers, mockCourses } from '@/lib/mock-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Users, BookOpen, Settings, ShieldAlert, Activity } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import { useEffect, useState } from 'react';
 
 interface AdminDashboardProps {
   user: User;
 }
 
 export function AdminDashboard({ user }: AdminDashboardProps) {
-  // In a real app, fetch these stats from the backend.
-  const totalUsers = mockUsers.length;
-  const totalCourses = mockCourses.length;
-  const totalTeachers = mockUsers.filter(u => u.role === 'teacher').length;
-  const totalStudents = mockUsers.filter(u => u.role === 'student').length;
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalCourses: 0,
+    totalTeachers: 0,
+    totalStudents: 0,
+    totalAdmins: 0,
+    courseCounts: {
+      Primary: 0,
+      Middle: 0,
+      Secondary: 0
+    }
+  });
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch users from API
+        const usersResponse = await fetch('/api/users');
+        const users = await usersResponse.json();
+        
+        // Fetch courses from API
+        const coursesResponse = await fetch('/api/courses');
+        const courses = await coursesResponse.json();
+        
+        // Calculate stats
+        const totalUsers = users.length;
+        const totalCourses = courses.length;
+        const totalTeachers = users.filter((u: any) => u.role === 'TEACHER').length;
+        const totalStudents = users.filter((u: any) => u.role === 'STUDENT').length;
+        const totalAdmins = users.filter((u: any) => u.role === 'ADMIN').length;
+        
+        // Count courses by category
+        const courseCounts = {
+          Primary: courses.filter((c: any) => c.category === 'Primary').length,
+          Middle: courses.filter((c: any) => c.category === 'Middle').length,
+          Secondary: courses.filter((c: any) => c.category === 'Secondary').length
+        };
+        
+        setStats({
+          totalUsers,
+          totalCourses,
+          totalTeachers,
+          totalStudents,
+          totalAdmins,
+          courseCounts
+        });
+      } catch (error) {
+        console.error('Error fetching admin dashboard data:', error);
+      }
+    };
+    
+    fetchData();
+  }, []);
+  
   const userDistributionData = [
-    { name: 'Students', count: totalStudents, fill: 'var(--color-students)' },
-    { name: 'Teachers', count: totalTeachers, fill: 'var(--color-teachers)' },
-    { name: 'Admins', count: mockUsers.filter(u => u.role === 'admin').length, fill: 'var(--color-admins)' },
+    { name: 'Students', count: stats.totalStudents, fill: 'var(--color-students)' },
+    { name: 'Teachers', count: stats.totalTeachers, fill: 'var(--color-teachers)' },
+    { name: 'Admins', count: stats.totalAdmins, fill: 'var(--color-admins)' },
   ];
 
   const courseDistributionData = [
-    { name: 'Primary', count: mockCourses.filter(c => c.category === 'Primary').length, fill: 'var(--color-primary-cat)' },
-    { name: 'Middle', count: mockCourses.filter(c => c.category === 'Middle').length, fill: 'var(--color-middle-cat)' },
-    { name: 'Secondary', count: mockCourses.filter(c => c.category === 'Secondary').length, fill: 'var(--color-secondary-cat)' },
+    { name: 'Primary', count: stats.courseCounts.Primary, fill: 'var(--color-primary-cat)' },
+    { name: 'Middle', count: stats.courseCounts.Middle, fill: 'var(--color-middle-cat)' },
+    { name: 'Secondary', count: stats.courseCounts.Secondary, fill: 'var(--color-secondary-cat)' },
   ];
 
   const chartConfig = {
@@ -43,12 +91,11 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
 
 
   return (
-    <div className="space-y-6">
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Users" value={totalUsers.toString()} icon={<Users className="h-6 w-6 text-primary" />} />
-        <StatCard title="Total Courses" value={totalCourses.toString()} icon={<BookOpen className="h-6 w-6 text-primary" />} />
-        <StatCard title="Total Teachers" value={totalTeachers.toString()} icon={<Users className="h-6 w-6 text-accent" />} />
-        <StatCard title="Total Students" value={totalStudents.toString()} icon={<Users className="h-6 w-6 text-secondary-foreground" />} />
+    <div className="space-y-6">      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Total Users" value={stats.totalUsers.toString()} icon={<Users className="h-6 w-6 text-primary" />} />
+        <StatCard title="Total Courses" value={stats.totalCourses.toString()} icon={<BookOpen className="h-6 w-6 text-primary" />} />
+        <StatCard title="Total Teachers" value={stats.totalTeachers.toString()} icon={<Users className="h-6 w-6 text-accent" />} />
+        <StatCard title="Total Students" value={stats.totalStudents.toString()} icon={<Users className="h-6 w-6 text-secondary-foreground" />} />
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">

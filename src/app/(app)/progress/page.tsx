@@ -1,15 +1,37 @@
-
 import { getCurrentUser } from '@/lib/auth';
-import { mockEnrolledCourses, mockStudentProgress, mockCourses } from '@/lib/mock-data';
-import type { User, EnrolledCourse, StudentProgress as StudentProgressType, Course } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, BookOpen, ListChecks, TrendingUp, Eye } from 'lucide-react';
+import { AlertCircle, BookOpen, ListChecks, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+
+// Define types for database responses
+interface CourseProgressDetail {
+  courseId: string;
+  totalAssignments: number;
+  completedAssignments: number;
+  materialsCount: number;
+  overallGrade?: string;
+}
+
+interface EnrolledCourseWithProgress {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  imageUrl: string | null;
+  teacher: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+  progress: number;
+  lastAccessed: string;
+  progressDetail: CourseProgressDetail;
+}
 
 export default async function ProgressOverviewPage() {
   const user = await getCurrentUser();
@@ -29,13 +51,21 @@ export default async function ProgressOverviewPage() {
     );
   }
 
-  // In a real app, fetch enrolled courses and their progress for the logged-in student
-  const enrolledCourses: EnrolledCourse[] = mockEnrolledCourses.filter(ec => {
-    // Simple mock: assume student 001 is enrolled in these.
-    // A real app would filter by user.id against enrollment records.
-    return true; 
-  });
-  const studentProgressDetails: StudentProgressType[] = mockStudentProgress;
+  // Fetch enrolled courses and progress from the API
+  let enrolledCourses: EnrolledCourseWithProgress[] = [];
+  
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/student/progress`, {
+      cache: 'no-store', // Don't cache the response
+      next: { tags: ['enrollments', 'progress'] }, // Cache tags for revalidation
+    });
+    
+    if (response.ok) {
+      enrolledCourses = await response.json();
+    }
+  } catch (error) {
+    console.error('Error fetching enrolled courses:', error);
+  }
 
   if (enrolledCourses.length === 0) {
     return (
@@ -78,12 +108,8 @@ export default async function ProgressOverviewPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {enrolledCourses.map((course) => {
-          const progressDetail = studentProgressDetails.find(p => p.courseId === course.id);
-          
-          let overallProgressPercentage = course.progress || 0;
-          if (progressDetail && progressDetail.totalAssignments > 0) {
-            overallProgressPercentage = (progressDetail.completedAssignments / progressDetail.totalAssignments) * 100;
-          }
+          const progressDetail = course.progressDetail;
+          const overallProgressPercentage = course.progress || 0;
 
           return (
             <Card key={course.id} className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
@@ -110,8 +136,7 @@ export default async function ProgressOverviewPage() {
                   Instructor: {course.teacher.name}
                 </CardDescription>
                 
-                <div className="space-y-2 mt-3">
-                  <div>
+                <div className="space-y-2 mt-3">                  <div>
                     <div className="flex justify-between items-center text-xs text-muted-foreground mb-1">
                       <span>Overall Progress</span>
                       <span>{overallProgressPercentage.toFixed(0)}%</span>

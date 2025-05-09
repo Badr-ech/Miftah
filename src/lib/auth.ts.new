@@ -1,0 +1,123 @@
+// src/lib/auth.ts - Client-side authentication functions
+import type { User, UserRole } from '@/types';
+
+// This variable is module-scoped for client-side immediate use
+let clientSideCurrentUserRole: UserRole = 'student'; 
+let clientSideCurrentUser: User | null = null;
+
+export async function getCurrentUser(): Promise<User | null> {
+  if (typeof window !== 'undefined') { // Client-side
+    // If we already have a user cached in memory, return it
+    if (clientSideCurrentUser) {
+      return clientSideCurrentUser;
+    }
+    
+    // Otherwise, fetch the user from the server
+    try {
+      const response = await fetch('/api/auth/me');
+      if (response.ok) {
+        const userData = await response.json();
+        if (userData) {
+          clientSideCurrentUser = userData;
+          clientSideCurrentUserRole = userData.role;
+          return userData;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('[auth.ts] Error fetching current user:', error);
+      return null;
+    }
+  }
+  
+  // Server-side: Delegate to the cookie-based method
+  try {
+    const { getServerUser } = await import('@/lib/server-auth');
+    return await getServerUser();
+  } catch (e) {
+    console.error("[auth.ts] getCurrentUser (server path): Error importing/using getServerUser:", e);
+    return null;
+  }
+}
+
+// Called from client components (login page)
+export async function login(email: string, password: string): Promise<User> {
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Login failed');
+    }
+
+    const userData = await response.json();
+    
+    // Update client-side cache
+    clientSideCurrentUser = userData;
+    clientSideCurrentUserRole = userData.role;
+    
+    return userData;
+  } catch (error) {
+    console.error('[auth.ts] Login error:', error);
+    throw error;
+  }
+}
+
+// For backwards compatibility - simulate login with just a role
+export async function loginWithRole(role: UserRole): Promise<User> {
+  try {
+    // Find a user with this role
+    const response = await fetch(`/api/users?role=${role.toUpperCase()}`);
+    if (!response.ok) {
+      throw new Error(`Failed to find user with role ${role}`);
+    }
+    
+    const users = await response.json();
+    if (users.length === 0) {
+      throw new Error(`No user found with role ${role}`);
+    }
+    
+    // Use the first user with the specified role
+    const user = users[0];
+    
+    // Set user cookies on the server
+    const { setUserCookies } = await import('@/lib/server-auth');
+    await setUserCookies(user.id, user.role.toLowerCase());
+    
+    // Update client-side cache
+    clientSideCurrentUser = user;
+    clientSideCurrentUserRole = user.role.toLowerCase();
+    
+    return user;
+  } catch (error) {
+    console.error('[auth.ts] LoginWithRole error:', error);
+    throw error;
+  }
+}
+
+export async function logout(): Promise<void> {
+  try {
+    const response = await fetch('/api/auth/logout', {
+      method: 'POST',
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Logout failed');
+    }
+    
+    // Clear client-side cache
+    clientSideCurrentUser = null;
+    clientSideCurrentUserRole = 'student';
+    
+  } catch (error) {
+    console.error('[auth.ts] Logout error:', error);
+    throw error;
+  }
+}

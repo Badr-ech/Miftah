@@ -16,7 +16,8 @@ interface CourseProgressPageProps {
 }
 
 export default async function CourseProgressPage({ params }: CourseProgressPageProps) {
-  const { courseId } = params;
+  const paramsObj = await params;
+  const courseId = paramsObj.courseId;
   const user = await getCurrentUser();
 
   // In a real app, fetch this data from an API, scoped to the current user

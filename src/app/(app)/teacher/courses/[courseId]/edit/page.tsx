@@ -1,7 +1,4 @@
-
 import { getCurrentUser } from '@/lib/auth';
-import { mockCourses } from '@/lib/mock-data';
-import type { Course } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -15,12 +12,40 @@ interface EditCoursePageProps {
   params: { courseId: string };
 }
 
+interface DBCourse {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  imageUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+  teacher: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+}
+
 export default async function EditCoursePage({ params }: EditCoursePageProps) {
   const user = await getCurrentUser();
   const courseId = params.courseId;
 
-  // In a real app, fetch course details from an API
-  const course = mockCourses.find(c => c.id === courseId);
+  // Fetch course from the API
+  let course: DBCourse | null = null;
+  
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/courses/${courseId}`, {
+      cache: 'no-store', // Don't cache the response
+      next: { tags: ['courses', `course-${courseId}`] }, // Cache tags for revalidation
+    });
+    
+    if (response.ok) {
+      course = await response.json();
+    }
+  } catch (error) {
+    console.error('Error fetching course:', error);
+  }
 
   if (!user || user.role !== 'teacher') {
     return (

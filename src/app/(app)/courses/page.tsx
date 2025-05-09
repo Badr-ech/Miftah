@@ -1,4 +1,3 @@
-import { mockCourses } from '@/lib/mock-data';
 import type { Course, CourseCategory } from '@/types';
 import { CourseCard } from '@/components/course-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,18 +15,24 @@ interface CoursesPageProps {
 export default async function CoursesPage({ searchParams }: CoursesPageProps) {
   const { query, category } = searchParams;
 
-  // In a real app, fetch courses based on query and category from API
-  let filteredCourses: Course[] = mockCourses;
-
+  // Fetch courses from API based on query parameters
+  const apiUrl = new URL(`${process.env.NEXT_PUBLIC_APP_URL}/api/courses`);
+  
   if (query) {
-    filteredCourses = filteredCourses.filter(course =>
-      course.title.toLowerCase().includes(query.toLowerCase()) ||
-      course.description.toLowerCase().includes(query.toLowerCase())
-    );
+    apiUrl.searchParams.append('query', query);
   }
-
+  
   if (category) {
-    filteredCourses = filteredCourses.filter(course => course.category === category);
+    apiUrl.searchParams.append('category', category);
+  }
+  
+  const response = await fetch(apiUrl, { cache: 'no-store' });
+  let filteredCourses: Course[] = [];
+  
+  if (response.ok) {
+    filteredCourses = await response.json();
+  } else {
+    console.error('Failed to fetch courses:', await response.text());
   }
 
   const categories: CourseCategory[] = ["Primary", "Middle", "Secondary"];

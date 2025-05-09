@@ -5,15 +5,21 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { UserRole } from '@/types';
-import { login as performLogin } from '@/lib/auth';
+import { login as performLogin, loginWithRole } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
-import { BookOpen, ShieldCheck, User, Users } from 'lucide-react';
+import { BookOpen, ShieldCheck, User, Users, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import Image from 'next/image';
 
 export default function LoginPage() {
+  const [loginMethod, setLoginMethod] = useState<'quick' | 'email'>('quick');
   const [selectedRole, setSelectedRole] = useState<UserRole>('student');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -24,17 +30,29 @@ export default function LoginPage() {
     setBgImage(`https://picsum.photos/seed/login-bg-${Math.random()}/1920/1080`);
   }, []);
 
-
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
+    
     try {
-      await performLogin(selectedRole);
-      toast({
-        title: 'Login Successful',
-        description: `You are now logged in as a ${selectedRole}.`,
-        variant: 'default',
-      });
+      if (loginMethod === 'quick') {
+        // Use the legacy quick role selection login
+        await loginWithRole(selectedRole);
+        toast({
+          title: 'Quick Login Successful',
+          description: `You are now logged in as a ${selectedRole}.`,
+          variant: 'default',
+        });
+      } else {
+        // Use the email/password login
+        await performLogin(email, password);
+        toast({
+          title: 'Login Successful',
+          description: `You are now logged in.`,
+          variant: 'default',
+        });
+      }
+      
       router.push('/dashboard');
       router.refresh(); // Important to re-fetch layout and user data
     } catch (error) {
@@ -66,47 +84,115 @@ export default function LoginPage() {
             <BookOpen className="h-10 w-10 text-primary" />
           </div>
           <CardTitle className="text-3xl font-bold">Welcome to Miftah</CardTitle>
-          <CardDescription>Please select your role to continue.</CardDescription>
+          <CardDescription>Sign in to continue</CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-6">
-            <RadioGroup
-              value={selectedRole}
-              onValueChange={(value: UserRole) => setSelectedRole(value)}
-              className="grid grid-cols-1 gap-4"
-            >
-              <Label
-                htmlFor="student"
-                className={`flex items-center space-x-3 rounded-md border-2 p-4 transition-all hover:border-primary ${selectedRole === 'student' ? 'border-primary ring-2 ring-primary ring-offset-2' : 'border-border'}`}
-              >
-                <RadioGroupItem value="student" id="student" />
-                <User className="h-6 w-6 text-primary" />
-                <span className="font-medium">Student</span>
-              </Label>
-              <Label
-                htmlFor="teacher"
-                className={`flex items-center space-x-3 rounded-md border-2 p-4 transition-all hover:border-primary ${selectedRole === 'teacher' ? 'border-primary ring-2 ring-primary ring-offset-2' : 'border-border'}`}
-              >
-                <RadioGroupItem value="teacher" id="teacher" />
-                <Users className="h-6 w-6 text-primary" />
-                <span className="font-medium">Teacher</span>
-              </Label>
-              <Label
-                htmlFor="admin"
-                className={`flex items-center space-x-3 rounded-md border-2 p-4 transition-all hover:border-primary ${selectedRole === 'admin' ? 'border-primary ring-2 ring-primary ring-offset-2' : 'border-border'}`}
-              >
-                <RadioGroupItem value="admin" id="admin" />
-                <ShieldCheck className="h-6 w-6 text-primary" />
-                <span className="font-medium">Admin</span>
-              </Label>
-            </RadioGroup>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Logging in...' : `Login as ${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}`}
-            </Button>
-          </CardFooter>
-        </form>
+        
+        <Tabs defaultValue="quick" onValueChange={(value) => setLoginMethod(value as 'quick' | 'email')}>
+          <TabsList className="grid grid-cols-2 w-[80%] mx-auto mb-4">
+            <TabsTrigger value="quick">Quick Login</TabsTrigger>
+            <TabsTrigger value="email">Email & Password</TabsTrigger>
+          </TabsList>
+          
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-6">
+              <TabsContent value="quick" className="space-y-4">
+                <div className="text-center text-sm text-muted-foreground mb-2">
+                  Select your role to login quickly
+                </div>
+                <RadioGroup
+                  value={selectedRole}
+                  onValueChange={(value: UserRole) => setSelectedRole(value)}
+                  className="grid grid-cols-1 gap-4"
+                >
+                  <Label
+                    htmlFor="student"
+                    className={`flex items-center space-x-3 rounded-md border-2 p-4 transition-all hover:border-primary ${selectedRole === 'student' ? 'border-primary ring-2 ring-primary ring-offset-2' : 'border-border'}`}
+                  >
+                    <RadioGroupItem value="student" id="student" />
+                    <User className="h-6 w-6 text-primary" />
+                    <span className="font-medium">Student</span>
+                  </Label>
+                  <Label
+                    htmlFor="teacher"
+                    className={`flex items-center space-x-3 rounded-md border-2 p-4 transition-all hover:border-primary ${selectedRole === 'teacher' ? 'border-primary ring-2 ring-primary ring-offset-2' : 'border-border'}`}
+                  >
+                    <RadioGroupItem value="teacher" id="teacher" />
+                    <Users className="h-6 w-6 text-primary" />
+                    <span className="font-medium">Teacher</span>
+                  </Label>
+                  <Label
+                    htmlFor="admin"
+                    className={`flex items-center space-x-3 rounded-md border-2 p-4 transition-all hover:border-primary ${selectedRole === 'admin' ? 'border-primary ring-2 ring-primary ring-offset-2' : 'border-border'}`}
+                  >
+                    <RadioGroupItem value="admin" id="admin" />
+                    <ShieldCheck className="h-6 w-6 text-primary" />
+                    <span className="font-medium">Admin</span>
+                  </Label>
+                </RadioGroup>
+              </TabsContent>
+              
+              <TabsContent value="email" className="space-y-4">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        placeholder="name@example.com"
+                        className="pl-10"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="password" 
+                        type={showPassword ? 'text' : 'password'} 
+                        className="pl-10 pr-10" 
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Default password for migrated accounts is: <code>password123</code>
+                  </div>
+                </div>
+              </TabsContent>
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading 
+                  ? 'Logging in...' 
+                  : loginMethod === 'quick'
+                    ? `Login as ${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}`
+                    : 'Login'
+                }
+              </Button>
+            </CardFooter>
+          </form>
+        </Tabs>
       </Card>
     </div>
   );

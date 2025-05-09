@@ -1,18 +1,38 @@
 import type { User, Course } from '@/types';
-import { mockCourses } from '@/lib/mock-data';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlusCircle, Edit3, Users, BarChartHorizontalBig, Eye } from 'lucide-react';
+import { use } from 'react';
 
 interface TeacherDashboardProps {
   user: User;
 }
 
+async function fetchTeacherCourses(teacherId: string): Promise<Course[]> {
+  try {
+    const apiUrl = new URL(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/api/courses`);
+    apiUrl.searchParams.append('teacherId', teacherId);
+    
+    const response = await fetch(apiUrl, { cache: 'no-store' });
+    
+    if (!response.ok) {
+      console.error('Failed to fetch teacher courses:', await response.text());
+      return [];
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching teacher courses:', error);
+    return [];
+  }
+}
+
 export function TeacherDashboard({ user }: TeacherDashboardProps) {
-  // In a real app, fetch courses taught by this teacher.
-  const coursesTaught = mockCourses.filter(course => course.teacher.id === user.id);
+  // Fetch courses taught by this teacher from the API
+  const coursesTaughtPromise = fetchTeacherCourses(user.id);
+  const coursesTaught = use(coursesTaughtPromise);
 
   const summaryStats = {
     totalCourses: coursesTaught.length,

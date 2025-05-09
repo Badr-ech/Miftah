@@ -1,20 +1,36 @@
 import type { User, EnrolledCourse, StudentProgress } from '@/types';
-import { mockEnrolledCourses, mockStudentProgress } from '@/lib/mock-data';
+import { mockStudentProgress } from '@/lib/mock-data'; // We'll keep this for now, but replace it later
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, BookText, CheckCircle } from 'lucide-react';
+import { use } from 'react';
 
 interface StudentDashboardProps {
   user: User;
 }
 
+async function fetchEnrolledCourses(userId: string): Promise<EnrolledCourse[]> {
+  const apiUrl = new URL(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/api/enrollments`);
+  apiUrl.searchParams.append('userId', userId);
+  
+  const response = await fetch(apiUrl, { cache: 'no-store' });
+  
+  if (!response.ok) {
+    console.error('Failed to fetch enrolled courses:', await response.text());
+    return [];
+  }
+  
+  return response.json();
+}
+
 export function StudentDashboard({ user }: StudentDashboardProps) {
-  // In a real app, fetch this data based on the user.id
-  const enrolledCourses: EnrolledCourse[] = mockEnrolledCourses;
-  const progressSummary: StudentProgress[] = mockStudentProgress;
+  // Fetch enrolled courses from the API
+  const enrolledCoursesPromise = fetchEnrolledCourses(user.id);
+  const enrolledCourses: EnrolledCourse[] = use(enrolledCoursesPromise);
+  const progressSummary: StudentProgress[] = mockStudentProgress; // We'll keep this for now
 
   return (
     <div className="space-y-6">

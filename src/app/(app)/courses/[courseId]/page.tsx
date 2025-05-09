@@ -1,4 +1,3 @@
-import { mockCourses, mockCourseMaterials, mockCourseAssignments } from '@/lib/mock-data';
 import type { Course, CourseMaterial, Assignment } from '@/types';
 import { getCurrentUser } from '@/lib/auth';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,19 +10,74 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-
 interface CourseDetailPageProps {
   params: { courseId: string };
 }
 
+// Extended types for database responses
+interface DBCourseMaterial {
+  id: string;
+  title: string;
+  type: string;
+  description: string | null;
+  url: string | null;
+  content: string | null;
+  uploadedAt: string;
+}
+
+interface DBAssignment {
+  id: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  totalPoints: number | null;
+}
+
+interface DBCourse {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  imageUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+  teacher: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  };
+  materials: DBCourseMaterial[];
+  assignments: DBAssignment[];
+  studentsCount: number;
+  materialsCount: number;
+  assignmentsCount: number;
+  isEnrolled?: boolean;
+}
+
 export default async function CourseDetailPage({ params }: CourseDetailPageProps) {
-  const { courseId } = params;
+  const paramsObj = await params;
+  const courseId = paramsObj.courseId;
   const user = await getCurrentUser();
 
-  // In a real app, fetch this data from an API
-  const course: Course | undefined = mockCourses.find(c => c.id === courseId);
-  const materials: CourseMaterial[] = mockCourseMaterials[courseId] || [];
-  const assignments: Assignment[] = mockCourseAssignments[courseId] || [];
+  // Fetch course data from the API
+  let course: DBCourse | null = null;
+  let materials: DBCourseMaterial[] = [];
+  let assignments: DBAssignment[] = [];
+  
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/courses/${courseId}`, {
+      cache: 'no-store', // Don't cache the response
+      next: { tags: ['courses', `course-${courseId}`] }, // Cache tags for revalidation
+    });
+    
+    if (response.ok) {
+      course = await response.json();
+      materials = course?.materials || [];
+      assignments = course?.assignments || [];
+    }
+  } catch (error) {
+    console.error('Error fetching course:', error);
+  }
 
   if (!course) {
     return (
@@ -42,8 +96,8 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
 
   const isTeacherOwner = user?.role === 'teacher' && user.id === course.teacher.id;
   const isAdmin = user?.role === 'admin';
-  // For students, a check for enrollment would be needed here. Assume enrolled for demo.
-  const isEnrolledStudent = user?.role === 'student'; 
+  // For students, use the enrollment status from the API
+  const isEnrolledStudent = user?.role === 'student' && course.isEnrolled; 
 
   return (
     <div className="space-y-8">
@@ -70,7 +124,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
           <div className="md:col-span-2 space-y-6">
             <div className="flex items-center space-x-3">
               <Avatar className="h-12 w-12">
-                <AvatarImage src={course.teacher.avatarUrl} alt={course.teacher.name} data-ai-hint="teacher avatar" />
+                <AvatarImage src={course.teacher.avatarUrl || undefined} alt={course.teacher.name} data-ai-hint="teacher avatar" />
                 <AvatarFallback>{course.teacher.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
@@ -133,17 +187,13 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
           <TabsTrigger value="assignments">
             <ListChecks className="mr-2 h-4 w-4" /> Assignments ({assignments.length})
           </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="materials">
+        </TabsList>        <TabsContent value="materials">
           <div className="space-y-4 mt-4">
             {materials.length > 0 ? materials.map(material => (
               <MaterialItem key={material.id} material={material} />
             )) : <p className="text-muted-foreground p-4 text-center">No materials uploaded for this course yet.</p>}
           </div>
-        </TabsContent>
-
-        <TabsContent value="assignments">
+        </TabsContent><TabsContent value="assignments">
           <div className="space-y-4 mt-4">
             {assignments.length > 0 ? assignments.map(assignment => (
               <AssignmentItem key={assignment.id} assignment={assignment} courseId={courseId} />
@@ -155,8 +205,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   );
 }
 
-
-function MaterialItem({ material }: { material: CourseMaterial }) {
+function MaterialItem({ material }: { material: DBCourseMaterial }) {
   const getIcon = () => {
     switch (material.type) {
       case 'file': return <FileText className="h-5 w-5 text-primary" />;
@@ -186,14 +235,14 @@ function MaterialItem({ material }: { material: CourseMaterial }) {
           </Button>
         )}
          {material.type === 'text' && (
-          <Button variant="outline" size="sm">View Content</Button> // Modal to show content
+          <Button variant="outline" size="sm">View Content</Button>
         )}
       </CardContent>
     </Card>
   );
 }
 
-function AssignmentItem({ assignment, courseId }: { assignment: Assignment, courseId: string }) {
+function AssignmentItem({ assignment, courseId }: { assignment: DBAssignment, courseId: string }) {
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
@@ -203,7 +252,7 @@ function AssignmentItem({ assignment, courseId }: { assignment: Assignment, cour
             <p className="text-sm text-muted-foreground mt-1 mb-2">{assignment.description}</p>
             <p className="text-xs text-muted-foreground">
               Due: {new Date(assignment.dueDate).toLocaleDateString()}
-              {assignment.totalPoints && ` | Points: ${assignment.totalPoints}`}
+              {assignment.totalPoints !== null && ` | Points: ${assignment.totalPoints}`}
             </p>
           </div>
           <Button variant="default" size="sm" asChild>
