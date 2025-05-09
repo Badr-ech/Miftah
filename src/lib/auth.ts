@@ -1,4 +1,4 @@
-import type { User, UserRole } from '@/types';
+import type { User, UserRole } from '../types';
 
 // This variable is module-scoped for client-side immediate use
 let clientSideCurrentUserRole: UserRole = 'student'; 
@@ -31,7 +31,7 @@ export async function getCurrentUser(): Promise<User | null> {
   
   // Server-side: Delegate to the cookie-based method
   try {
-    const { getServerUser } = await import('@/lib/server-auth');
+    const { getServerUser } = await import('../lib/server-auth');
     return await getServerUser();
   } catch (e) {
     console.error("[auth.ts] getCurrentUser (server path): Error using getServerUser:", e);
