@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db } from '../../../../lib/db';
 import { compare } from 'bcryptjs';
-import type { UserRole } from '@/types';
+import type { UserRole } from '../../../../types';
 
 export async function POST(request: Request) {
   try {
