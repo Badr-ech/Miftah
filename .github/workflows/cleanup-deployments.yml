@@ -1,0 +1,105 @@
+name: Clean Old Vercel Deployments
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run at midnight daily
+  workflow_dispatch:     # Allow manual triggering
+
+jobs:
+  cleanup-deployments:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Cleanup old preview deployments
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          # Install required tools
+          npm install -g vercel
+          sudo apt-get update && sudo apt-get install -y jq curl
+
+          # Authentication with Vercel
+          vercel login --token $VERCEL_TOKEN
+
+          echo "Fetching all deployments (including previews)..."
+          
+          # 1. Fetch all deployments (get both production and preview)
+          DEPLOYMENTS=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT_ID&teamId=$VERCEL_ORG_ID&limit=100&state=READY")
+
+          # 2. Separate production deployments and preview deployments
+          PROD_DEPLOYMENTS=$(echo "$DEPLOYMENTS" | jq -c '.deployments | map(select(.target == "production"))')
+          PREVIEW_DEPLOYMENTS=$(echo "$DEPLOYMENTS" | jq -c '.deployments | map(select(.target != "production"))')
+          
+          # 3. Count deployments
+          PROD_COUNT=$(echo "$PROD_DEPLOYMENTS" | jq -r 'length')
+          PREVIEW_COUNT=$(echo "$PREVIEW_DEPLOYMENTS" | jq -r 'length')
+          
+          echo "Found $PROD_COUNT production deployments"
+          echo "Found $PREVIEW_COUNT preview deployments"
+          
+          # 4. Keep the latest production deployment
+          if [ "$PROD_COUNT" -gt 0 ]; then
+            LATEST_PROD=$(echo "$PROD_DEPLOYMENTS" | jq -r '.[0].uid')
+            echo "Latest production deployment: $LATEST_PROD - Will keep this one"
+          else
+            LATEST_PROD=""
+            echo "No production deployments found"
+          fi
+          
+          # 5. Delete old preview deployments 
+          # (optional: keep preview deployments from specific branches)
+          echo "Cleaning up preview deployments..."
+          echo "$PREVIEW_DEPLOYMENTS" | jq -c '.[]' | while read -r deployment; do
+            DEPLOYMENT_ID=$(echo "$deployment" | jq -r '.uid')
+            DEPLOYMENT_URL=$(echo "$deployment" | jq -r '.url')
+            DEPLOYMENT_META=$(echo "$deployment" | jq -r '.meta // {}' 2>/dev/null)
+            DEPLOYMENT_BRANCH=$(echo "$DEPLOYMENT_META" | jq -r '.githubCommitRef // "unknown"' 2>/dev/null)
+            
+            echo "Preview deployment: $DEPLOYMENT_ID ($DEPLOYMENT_URL) from branch: $DEPLOYMENT_BRANCH"
+            
+            # Delete preview deployment
+            echo "Deleting deployment $DEPLOYMENT_ID..."
+            DELETE_RESPONSE=$(curl -s -X DELETE -H "Authorization: Bearer $VERCEL_TOKEN" \
+              "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID?teamId=$VERCEL_ORG_ID")
+            
+            ERROR=$(echo "$DELETE_RESPONSE" | jq -r '.error.message // empty')
+            if [ -z "$ERROR" ]; then
+              echo "Successfully deleted preview deployment $DEPLOYMENT_ID"
+            else
+              echo "Error deleting deployment: $ERROR"
+            fi
+          done
+          
+          # 6. Delete old production deployments except the latest one
+          echo "Cleaning up old production deployments..."
+          echo "$PROD_DEPLOYMENTS" | jq -c '.[1:] | .[]' | while read -r deployment; do
+            DEPLOYMENT_ID=$(echo "$deployment" | jq -r '.uid')
+            DEPLOYMENT_URL=$(echo "$deployment" | jq -r '.url')
+            
+            if [ "$DEPLOYMENT_ID" != "$LATEST_PROD" ]; then
+              echo "Old production deployment: $DEPLOYMENT_ID ($DEPLOYMENT_URL)"
+              echo "Deleting deployment $DEPLOYMENT_ID..."
+              
+              DELETE_RESPONSE=$(curl -s -X DELETE -H "Authorization: Bearer $VERCEL_TOKEN" \
+                "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID?teamId=$VERCEL_ORG_ID")
+              
+              ERROR=$(echo "$DELETE_RESPONSE" | jq -r '.error.message // empty')
+              if [ -z "$ERROR" ]; then
+                echo "Successfully deleted old production deployment $DEPLOYMENT_ID"
+              else
+                echo "Error deleting deployment: $ERROR"
+              fi
+            fi
+          done
+          
+          echo "Deployment cleanup completed."

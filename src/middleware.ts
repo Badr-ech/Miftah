@@ -43,16 +43,18 @@ export async function middleware(request: NextRequest) {
   if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build') {
     return NextResponse.next();
   }
-
-  // For production deployments, check for a cookie before redirecting
+  // For production deployments, check for cookies before redirecting
   const userRole = request.cookies.get('userRole');
+  const userId = request.cookies.get('userId');
   
-  // If the URL path is under /dashboard or other protected routes and no userRole cookie exists
-  if (!userRole?.value && !publicPaths.includes(pathname)) {
+  // If the URL path is under /dashboard or other protected routes and no authentication cookies exist
+  if ((!userRole?.value && !userId?.value) && !publicPaths.includes(pathname)) {
     // For the demo, redirect to login page
-    console.log(`[Middleware] No userRole cookie found for ${pathname}, redirecting to /login`);
+    console.log(`[Middleware] No auth cookies found for ${pathname}, redirecting to /login`);
     return NextResponse.redirect(new URL('/login', request.url));
   }
+  
+  // Continue even if only one of the cookies is present - fallback mechanisms in the components will handle it
 
 
   return NextResponse.next();

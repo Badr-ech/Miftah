@@ -22,13 +22,15 @@ export async function POST(request: Request) {
         return v.toString(16);
       });
     }
+      // Normalize role for consistency
+    const normalizedRole = role.toLowerCase();
     
     const defaultUser = {
       id: generateUUID(),
-      name: `Default ${role.charAt(0).toUpperCase() + role.slice(1)}`,
-      email: `default_${role}@example.com`,
-      role: role.toLowerCase(),
-      avatarUrl: `https://picsum.photos/seed/${role}/100/100`
+      name: `Default ${normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1)}`,
+      email: `default_${normalizedRole}@example.com`,
+      role: normalizedRole,
+      avatarUrl: `https://picsum.photos/seed/${normalizedRole}/100/100`
     };
     
     // Create response with user data
@@ -44,10 +46,9 @@ export async function POST(request: Request) {
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
       });
-      
-      response.cookies.set({
+        response.cookies.set({
         name: 'userRole',
-        value: role.toLowerCase(),
+        value: normalizedRole,
         path: '/',
         maxAge: 60 * 60 * 24 * 7, // 7 days
         httpOnly: true,

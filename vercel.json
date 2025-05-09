@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "public": false,
+  "github": {
+    "enabled": true,
+    "silent": true,
+    "autoJobCancelation": true
+  },
+  "cleanUrls": true,
+  "outputDirectory": ".next",
+  "deploymentDefaults": {
+    "maxDuration": 200
+  },
+  "crons": {
+    "cleanup": "0 0 * * *"
+  }
+}

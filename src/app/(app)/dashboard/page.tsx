@@ -54,7 +54,6 @@ export default async function DashboardPage() {
       </div>
     );
   }
-
   return (
     <div className="space-y-6">
       <Card className="shadow-sm">
@@ -62,13 +61,14 @@ export default async function DashboardPage() {
           <CardTitle className="text-3xl">Welcome back, {user.name}!</CardTitle>
           <CardDescription>Here&apos;s what&apos;s happening on Miftah Platform today.</CardDescription>
         </CardHeader>
-      </Card>      {/* Log the actual role value for debugging */}
+      </Card>      
+      {/* Log the actual role value for debugging */}
       <div className="hidden">{`Debug - User role: "${user.role}" (Type: ${typeof user.role})`}</div>
       
-      {/* Use case-insensitive comparison just to be safe */}
-      {user.role.toLowerCase() === 'student' && <StudentDashboard user={user} />}
-      {user.role.toLowerCase() === 'teacher' && <TeacherDashboard user={user} />}
-      {user.role.toLowerCase() === 'admin' && <AdminDashboard user={user} />}
+      {/* Handle various formats of role value that might come from different environments */}
+      {(user.role.toLowerCase() === 'student' || user.role === 'STUDENT') && <StudentDashboard user={user} />}
+      {(user.role.toLowerCase() === 'teacher' || user.role === 'TEACHER') && <TeacherDashboard user={user} />}
+      {(user.role.toLowerCase() === 'admin' || user.role === 'ADMIN') && <AdminDashboard user={user} />}
     </div>
   );
 }

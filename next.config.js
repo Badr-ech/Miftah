@@ -24,16 +24,27 @@ const nextConfig = {
   // Note: Next.js 15 doesn't support 'hybrid' output anymore
   output: 'standalone',
     // Explicitly mark routes that use cookies() as dynamic
-  // This prevents the "Dynamic server usage" errors during build
-  experimental: {
+  // This prevents the "Dynamic server usage" errors during build  experimental: {
     // Disabled CSS optimization due to issues with critters package
     // optimizeCss: true,
     serverActions: {
       allowedOrigins: ['localhost:3000', 'miftah.vercel.app'],
     },
   },
-  
-  // Fix for require.extensions warning with handlebars
+  // Configure both Webpack and Turbopack to work consistently
+  turbo: {
+    loaders: {
+      // Common loaders for both bundlers
+      '.js': 'jsx',
+      '.jsx': 'jsx',
+      '.ts': 'tsx',
+      '.tsx': 'tsx',
+    },
+    // Add resolution rules for compatibility
+    resolveExtensions: ['.js', '.jsx', '.ts', '.tsx'],
+    resolveNodeModules: true,
+  },
+    // Fix for require.extensions warning with handlebars
   webpack: (config) => {
     // Handle the handlebars require.extensions issue
     config.resolve.fallback = {

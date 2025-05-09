@@ -50,14 +50,14 @@ export default async function ProgressOverviewPage() {
       </div>
     );
   }
-
   // Fetch enrolled courses and progress from the API
   let enrolledCourses: EnrolledCourseWithProgress[] = [];
   
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/student/progress`, {
+    const response = await fetch('/api/student/progress', {
       cache: 'no-store', // Don't cache the response
       next: { tags: ['enrollments', 'progress'] }, // Cache tags for revalidation
+      credentials: 'include' // Ensure cookies are sent with the request
     });
     
     if (response.ok) {

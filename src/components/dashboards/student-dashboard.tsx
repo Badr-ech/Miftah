@@ -1,8 +1,8 @@
-import type { User, EnrolledCourse, StudentProgress } from '@/types';
-import { mockStudentProgress } from '@/lib/mock-data'; // We'll keep this for now, but replace it later
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
+import type { User, EnrolledCourse, StudentProgress } from '../../types';
+import { mockStudentProgress } from '../../lib/mock-data'; // We'll keep this for now, but replace it later
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
+import { Progress } from '../../components/ui/progress';
+import { Button } from '../../components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, BookText, CheckCircle } from 'lucide-react';

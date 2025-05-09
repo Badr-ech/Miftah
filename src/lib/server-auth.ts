@@ -30,13 +30,14 @@ export async function getUserRoleFromCookies(): Promise<UserRole | null> {
     if (process.env.NODE_ENV !== 'production') {
       console.log(`[server-auth] getUserRoleFromCookies: Raw cookie value is '${roleCookie?.value}'`);
     }
-    
-    // Validate the role value
-    if (roleCookie && (roleCookie.value === 'student' || roleCookie.value === 'teacher' || roleCookie.value === 'admin')) {
-        return roleCookie.value as UserRole;
-    }
+      // Validate the role value - handle case insensitivity
     if (roleCookie) {
+      const lowerCaseRole = roleCookie.value.toLowerCase();
+      if (lowerCaseRole === 'student' || lowerCaseRole === 'teacher' || lowerCaseRole === 'admin') {
+        return lowerCaseRole as UserRole;
+      } else {
         console.warn(`[server-auth] getUserRoleFromCookies: Invalid role value in cookie: '${roleCookie.value}'`);
+      }
     }
     return null;
   } catch (error) {
@@ -170,16 +171,18 @@ export async function getServerUser(): Promise<User | null> {
         });
         
         if (dbUser) {
-          // User found in database
+          // User found in database          // Normalize role to lowercase for consistency across environments
+          const normalizedRole = dbUser.role.toString().toLowerCase();
+          
           const user: User = {
             id: dbUser.id,
             name: dbUser.name,
             email: dbUser.email,
-            role: dbUser.role.toLowerCase() as UserRole,
+            role: normalizedRole as UserRole,
             avatarUrl: dbUser.avatarUrl || undefined
           };
           
-          console.log(`[server-auth] getServerUser: Successfully found user '${user.name}' with role '${user.role}'`);
+          console.log(`[server-auth] getServerUser: Successfully found user '${user.name}' with role '${normalizedRole}'`);
           return user;
         }
       } catch (dbError) {
@@ -205,17 +208,19 @@ export async function getServerUser(): Promise<User | null> {
           }
         });
         
-        if (dbUser) {
-          const user: User = {
+        if (dbUser) {        // Normalize role to lowercase for consistency
+        const normalizedRole = dbUser.role.toString().toLowerCase();
+        
+        const user: User = {
             id: dbUser.id,
             name: dbUser.name,
             email: dbUser.email,
-            role: dbUser.role.toLowerCase() as UserRole,
+            role: normalizedRole as UserRole,
             avatarUrl: dbUser.avatarUrl || undefined
           };
           
           // Set the userId cookie for future requests
-          await setUserCookies(user.id, user.role);
+          await setUserCookies(user.id, normalizedRole as UserRole);
           
           console.log(`[server-auth] getServerUser: Found user by role '${role}': ${user.name}`);
           return user;

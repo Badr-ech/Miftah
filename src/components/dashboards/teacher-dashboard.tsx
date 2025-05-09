@@ -1,6 +1,6 @@
-import type { User, Course } from '@/types';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import type { User, Course } from '../../types';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlusCircle, Edit3, Users, BarChartHorizontalBig, Eye } from 'lucide-react';
