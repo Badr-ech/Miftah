@@ -17,12 +17,15 @@ export default async function AppLayout({
   const user = await getCurrentUser();
 
   if (!user) {
-    // This should ideally redirect to login page, but for now, we'll show a message.
-    // In a real app, middleware would handle this.
+    // Redirect to login page
+    // We use a client-side redirect to avoid any server/client mismatch issues
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p>Please log in to access the Miftah Platform.</p>
         <Button asChild className="ml-4"><Link href="/login">Login</Link></Button>
+        <script dangerouslySetInnerHTML={{ 
+          __html: `window.location.href = "/login";` 
+        }} />
       </div>
     );
   }

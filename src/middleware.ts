@@ -38,20 +38,21 @@ export async function middleware(request: NextRequest) {
   // For the purpose of this scaffold, let's assume if they are trying to access /dashboard or /courses/* etc.
   // they should be "logged in". We can't truly check without a proper session mechanism.  // So, we'll allow access and let the page components handle the user state.
   // This is not ideal but necessary given the limitations of the mock auth.
-
   // Skip authentication checks in production build for static routes
   // This helps avoid 'Dynamic server usage' errors during build
-  // The pages themselves will still handle auth state client-side
   if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build') {
     return NextResponse.next();
   }
 
-  // If you want to enforce redirection:
-  // const user = await getServerUser(); // This is a mock, remember.
-  // if (!user && !publicPaths.includes(pathname)) {
-  //    console.log(`Middleware: No user found for ${pathname}, redirecting to /login`);
-  //    return NextResponse.redirect(new URL('/login?redirectedFrom=${pathname}', request.url));
-  // }
+  // For production deployments, check for a cookie before redirecting
+  const userRole = request.cookies.get('userRole');
+  
+  // If the URL path is under /dashboard or other protected routes and no userRole cookie exists
+  if (!userRole?.value && !publicPaths.includes(pathname)) {
+    // For the demo, redirect to login page
+    console.log(`[Middleware] No userRole cookie found for ${pathname}, redirecting to /login`);
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
 
 
   return NextResponse.next();
