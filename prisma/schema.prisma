@@ -9,7 +9,7 @@ datasource db {
 }
 
 model User {
-  id                    String                 @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                    String                 @id @default(uuid()) @db.Uuid
   name                  String                 @db.VarChar(255)
   email                 String                 @unique @db.VarChar(255)
   emailVerified         DateTime?              @db.Timestamp(6)
@@ -27,7 +27,7 @@ model User {
 }
 
 model Course {
-  id            String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id            String             @id @default(uuid()) @db.Uuid
   title         String             @db.VarChar(255)
   description   String
   category      String             @db.VarChar(50)
@@ -45,7 +45,7 @@ model Course {
 }
 
 model CourseEnrollment {
-  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id           String   @id @default(uuid()) @db.Uuid
   enrolledAt   DateTime @default(now()) @db.Timestamp(6)
   lastAccessed DateTime @default(now()) @db.Timestamp(6)
   progress     Float    @default(0)
@@ -60,7 +60,7 @@ model CourseEnrollment {
 }
 
 model CourseMaterial {
-  id         String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id         String       @id @default(uuid()) @db.Uuid
   title      String       @db.VarChar(255)
   type       MaterialType
   url        String?      @db.VarChar(255)
@@ -73,7 +73,7 @@ model CourseMaterial {
 }
 
 model Assignment {
-  id          String                 @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id          String                 @id @default(uuid()) @db.Uuid
   title       String                 @db.VarChar(255)
   description String
   dueDate     DateTime               @db.Timestamp(6)
@@ -88,7 +88,7 @@ model Assignment {
 }
 
 model AssignmentSubmission {
-  id           String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id           String           @id @default(uuid()) @db.Uuid
   submittedAt  DateTime         @default(now()) @db.Timestamp(6)
   grade        String?          @db.VarChar(10)
   status       SubmissionStatus @default(PENDING)
@@ -105,7 +105,7 @@ model AssignmentSubmission {
 }
 
 model Message {
-  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id         String   @id @default(uuid()) @db.Uuid
   content    String
   sentAt     DateTime @default(now()) @db.Timestamp(6)
   isRead     Boolean  @default(false)
@@ -119,7 +119,7 @@ model Message {
 }
 
 model Announcement {
-  id        String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
   title     String   @db.VarChar(255)
   content   String
   createdAt DateTime @default(now()) @db.Timestamp(6)
@@ -133,7 +133,7 @@ model Announcement {
 }
 
 model StudentProgress {
-  id                   String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                   String   @id @default(uuid()) @db.Uuid
   completedAssignments Int      @default(0)
   totalAssignments     Int      @default(0)
   overallGrade         String?  @db.VarChar(10)
