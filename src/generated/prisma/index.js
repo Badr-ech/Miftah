@@ -241,7 +241,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\mizou\\OneDrive - Al Akhawayn University in Ifrane\\Documents\\AUI\\Spring 2025\\CSC 4307\\Miftah\\src\\generated\\prisma",
+      "value": "C:\\Miftah\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -255,7 +255,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\mizou\\OneDrive - Al Akhawayn University in Ifrane\\Documents\\AUI\\Spring 2025\\CSC 4307\\Miftah\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Miftah\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
