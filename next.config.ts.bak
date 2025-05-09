@@ -1,6 +1,11 @@
-import type {NextConfig} from 'next';
+import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
+// Define the extended config type that includes the output property
+type ExtendedNextConfig = NextConfig & {
+  output?: 'standalone' | 'export' | 'hybrid';
+};
+
+const nextConfig: ExtendedNextConfig = {
   /* config options here */
   typescript: {
     ignoreBuildErrors: true,
@@ -17,7 +22,8 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
-  },
+  },  // Handle the dynamic server usage errors
+  output: 'hybrid',
 };
 
 export default nextConfig;

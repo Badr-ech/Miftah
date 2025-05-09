@@ -1,9 +1,9 @@
 // filepath: c:\Miftah\src\app\(app)\teacher\courses\new\page.tsx
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../../../components/ui/button';
 import Link from 'next/link';
 import { AlertCircle } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { getCurrentUser } from '@/lib/auth';
+import { Alert, AlertTitle, AlertDescription } from '../../../../../components/ui/alert';
+import { getCurrentUser } from '../../../../../lib/auth';
 import { NewCourseForm } from './new-course-form';
 
 // This is a server component, so it can be async
