@@ -74,11 +74,10 @@ jobs:
             
       # Push schema to test database
       - name: Push schema to database
-        run: |
-          # Make sure extension is loaded before pushing the schema
+        run: |          # Make sure extension is loaded before pushing the schema
           psql -h localhost -U postgres -d miftah_test -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
-          # Then run the Prisma push with detailed logging
-          npx prisma db push --force-reset --detailed-log
+          # Then run the Prisma push without the invalid flag
+          npx prisma db push --force-reset
         env:
             PGPASSWORD: postgres
             # Explicitly set DATABASE_URL to ensure it's used for this step
