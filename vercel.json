@@ -8,9 +8,6 @@
   },
   "cleanUrls": true,
   "outputDirectory": ".next",
-  "deploymentDefaults": {
-    "maxDuration": 200
-  },
   "crons": {
     "cleanup": "0 0 * * *"
   }
