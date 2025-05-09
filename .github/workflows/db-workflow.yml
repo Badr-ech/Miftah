@@ -15,6 +15,8 @@ on:
 env:
   NODE_ENV: test
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/miftah_test?schema=public
+  # Add this to ensure Prisma knows about the extension
+  POSTGRES_EXTENSIONS: uuid-ossp
 
 jobs:
   # This job handles building and testing the Next.js application with TypeScript
@@ -53,17 +55,32 @@ jobs:
           # Generate Prisma client
       - name: Generate Prisma Client
         run: npx prisma generate
-        
-      # Enable the uuid-ossp extension before running Prisma
-      - name: Enable uuid-ossp extension
+          # Enable the uuid-ossp extension before running Prisma
+      - name: Enable uuid-ossp extension and initialize database
         run: |
+            # Create extension
             psql -h localhost -U postgres -d miftah_test -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
-            psql -h localhost -U postgres -d miftah_test -c "SELECT uuid_generate_v4();" # Verify extension is working
+            # Verify extension is working
+            psql -h localhost -U postgres -d miftah_test -c "SELECT uuid_generate_v4();"
+            # Create schema explicitly to ensure extension is available
+            psql -h localhost -U postgres -d miftah_test -c "CREATE SCHEMA IF NOT EXISTS public;"
+            # Grant privileges to ensure Prisma has access
+            psql -h localhost -U postgres -d miftah_test -c "GRANT ALL ON SCHEMA public TO postgres;"
+            psql -h localhost -U postgres -d miftah_test -c "GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres;"
+            # Verify extension one more time
+            psql -h localhost -U postgres -d miftah_test -c "SELECT uuid_generate_v4() AS test_uuid;"
         env:
-            PGPASSWORD: postgres      # Push schema to test database
+            PGPASSWORD: postgres
+            
+      # Push schema to test database
       - name: Push schema to database
-        run: npx prisma db push --force-reset
+        run: |
+          # Make sure extension is loaded before pushing the schema
+          psql -h localhost -U postgres -d miftah_test -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
+          # Then run the Prisma push with detailed logging
+          npx prisma db push --force-reset --detailed-log
         env:
+            PGPASSWORD: postgres
             # Explicitly set DATABASE_URL to ensure it's used for this step
             DATABASE_URL: postgresql://postgres:postgres@localhost:5432/miftah_test?schema=public
         
