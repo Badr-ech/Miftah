@@ -51,10 +51,24 @@ jobs:
       # Generate Prisma client
       - name: Generate Prisma Client
         run: npx prisma generate
+      
+      # Enable the uuid-ossp extension before doing any database operations
+      - name: Enable uuid-ossp extension
+        run: |
+            psql -h localhost -U postgres -d miftah_test -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
+            psql -h localhost -U postgres -d miftah_test -c "SELECT uuid_generate_v4();" # Verify extension is working
+        env:
+            PGPASSWORD: postgres
         
       # Run Prisma validation
       - name: Validate Prisma Schema
         run: npx prisma validate
+        
+      # Push schema to test database (needed before tests)
+      - name: Push schema to database
+        run: npx prisma db push --force-reset
+        env:
+            DATABASE_URL: postgresql://postgres:postgres@localhost:5432/miftah_test?schema=public
         
       # Run Prisma tests with the test database
       - name: Run Prisma tests
