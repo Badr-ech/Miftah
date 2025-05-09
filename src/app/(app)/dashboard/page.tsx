@@ -13,22 +13,20 @@ export default async function DashboardPage() {
   let user = await getServerUser();
   
   // Fallback for demo mode: If server-side auth fails, check for a userRole cookie
-  if (!user) {
-    const { cookies } = await import('next/headers');
-    try {
-      const cookieStore = cookies();
-      const roleCookie = cookieStore.get('userRole');
+  if (!user) {    const { cookies } = await import('next/headers');    try {
+      const cookieStore = await cookies();
+      // Access the cookie value correctly
+      const userRoleCookie = cookieStore.get('userRole')?.value;
       
-      if (roleCookie) {
-        // Create a demo user for the role
+      if (userRoleCookie) {        // Create a demo user for the role
         user = {
           id: '00000000-0000-0000-0000-000000000000',
-          name: `Demo ${roleCookie.value.charAt(0).toUpperCase() + roleCookie.value.slice(1)}`,
-          email: `demo_${roleCookie.value}@example.com`,
-          role: roleCookie.value as any,
-          avatarUrl: `https://picsum.photos/seed/${roleCookie.value}/100/100`
+          name: `Demo ${userRoleCookie.charAt(0).toUpperCase() + userRoleCookie.slice(1)}`,
+          email: `demo_${userRoleCookie}@example.com`,
+          role: userRoleCookie as any,
+          avatarUrl: `https://picsum.photos/seed/${userRoleCookie}/100/100`
         };
-        console.log(`[DashboardPage] Created demo user for role: ${roleCookie.value}`);
+        console.log(`[DashboardPage] Created demo user for role: ${userRoleCookie}`);
       }
     } catch (error) {
       console.error("[DashboardPage] Error creating fallback user:", error);
