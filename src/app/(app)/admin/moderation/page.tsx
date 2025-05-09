@@ -1,11 +1,11 @@
 
-import { getCurrentUser } from '@/lib/auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { getCurrentUser } from '../../../../lib/auth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
 import Link from 'next/link';
 import { AlertCircle, ShieldAlert, Flag, UserX, MessageCircleOff } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertTitle, AlertDescription } from '../../../../components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../components/ui/tabs';
 
 export default async function AdminModerationPage() {
   const user = await getCurrentUser();

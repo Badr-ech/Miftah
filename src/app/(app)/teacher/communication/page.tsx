@@ -1,13 +1,13 @@
 
-import { getCurrentUser } from '@/lib/auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { getCurrentUser } from '../../../../lib/auth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
 import Link from 'next/link';
 import { AlertCircle, MessageSquare, Send } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertTitle, AlertDescription } from '../../../../components/ui/alert';
+import { Textarea } from '../../../../components/ui/textarea';
+import { Input } from '../../../../components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../components/ui/tabs';
 
 export default async function TeacherCommunicationPage() {
   const user = await getCurrentUser();
