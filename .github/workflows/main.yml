@@ -148,7 +148,7 @@ jobs:
             testConnection();
           '
         env:
-          DATABASE_URL: mongodb://localhost:27017/miftah_test
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
       # Restore Next.js cache if available
       - name: Restore Next.js cache
