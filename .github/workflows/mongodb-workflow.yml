@@ -17,22 +17,8 @@ env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
 jobs:
-  # This job handles building and testing the Next.js application with TypeScript
   build-and-test:
     runs-on: ubuntu-latest
-
-    # Set up MongoDB service for tests
-    services:
-      mongodb:
-        image: mongo:latest
-        ports:
-          - 27017:27017
-        # Set health checks to wait until MongoDB has started
-        options: >-
-          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - name: Checkout code

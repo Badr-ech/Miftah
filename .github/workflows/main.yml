@@ -19,17 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-    # Set up MongoDB service for tests
-    services:
-      mongodb:
-        image: mongo:latest
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -44,17 +33,52 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      # Test MongoDB Atlas connection
+      - name: Test MongoDB Atlas connection
+        run: |
+          echo "Testing MongoDB connection..."
+          npm install --no-save mongodb
+          cat > test-connection.js << 'EOL'
+          const { MongoClient } = require('mongodb');
+          async function main() {
+            console.log('Attempting to connect to MongoDB...');
+            console.log('Connection string format check:', 
+              process.env.DATABASE_URL.startsWith('mongodb+srv://') ? '✅ Looks good' : '❌ Wrong format');
+            const client = new MongoClient(process.env.DATABASE_URL);
+            try {
+              await client.connect();
+              console.log('✅ Successfully connected to MongoDB!');
+              await client.db().command({ ping: 1 });
+              console.log('✅ Database responded to ping!');
+              await client.close();
+            } catch (e) {
+              console.error('❌ MongoDB connection failed:', e);
+              process.exit(1);
+            }
+          }
+          main();
+          EOL
+          node test-connection.js
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        
       # Generate Prisma client
       - name: Generate Prisma Client
         run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
       # Run Prisma validation
       - name: Validate Prisma Schema
         run: npx prisma validate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
       # Push schema to test database (needed before tests)
       - name: Push schema to MongoDB
         run: npx prisma db push --force-reset
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
       # Run Prisma tests with the test database
       - name: Run Prisma tests
