@@ -56,25 +56,34 @@ export async function POST(request: Request) {
     
     // Create response with user data
     const response = NextResponse.json(defaultUser);
+      // Set domain based on environment
+    const domain = process.env.NEXT_PUBLIC_APP_DOMAIN || undefined;
+    const isProduction = process.env.NODE_ENV === 'production';
     
-    // Set cookies for authentication
+    console.log(`[role-login] Setting cookies with domain: ${domain || 'undefined'}, production: ${isProduction}`);
+    
+    // Set cookies for authentication with improved settings for cross-environment compatibility
     response.cookies.set({
       name: 'userId',
       value: defaultUser.id,
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      });
-        response.cookies.set({
-        name: 'userRole',
-        value: normalizedRole,
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',      });
+      sameSite: 'lax',     // Use 'lax' for better cross-site compatibility
+      secure: isProduction, // Only secure in production
+      domain: domain,       // Set domain if in production
+    });
+    
+    response.cookies.set({
+      name: 'userRole',
+      value: normalizedRole,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      httpOnly: true,
+      sameSite: 'lax',     // Use 'lax' for better cross-site compatibility
+      secure: isProduction, // Only secure in production
+      domain: domain,       // Set domain if in production
+    });
       
       return response;
   } catch (error) {

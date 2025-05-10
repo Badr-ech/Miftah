@@ -106,12 +106,25 @@ const StudyPlanPage: NextPage = () => {
       durationInWeeks: 4,
     },
   });
-
   const onSubmit: SubmitHandler<GenerateStudyPlanInput> = async (data) => {
     setIsLoading(true);
     setStudyPlan(null);
     setError(null);
     try {
+      // First ensure we're still authenticated
+      const user = await getCurrentUser();
+      if (!user) {
+        console.error("[StudyPlanPage] User not authenticated when submitting form");
+        toast({
+          title: "Authentication required",
+          description: "Please log in to generate a study plan",
+          variant: "destructive",
+        });
+        router.push('/login');
+        return;
+      }
+      
+      console.log("[StudyPlanPage] Generating study plan for authenticated user:", user.email);
       const plan = await generateStudyPlan(data);
       setStudyPlan(plan);
       toast({

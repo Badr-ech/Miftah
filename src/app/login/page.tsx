@@ -28,15 +28,21 @@ export default function LoginPage() {
   useEffect(() => {
     // Generate a random image URL on client mount to avoid hydration mismatch
     setBgImage(`https://picsum.photos/seed/login-bg-${Math.random()}/1920/1080`);
-  }, []);
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  }, []);  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
+    
+    // Check if there's a redirect destination in the URL
+    const searchParams = new URLSearchParams(window.location.search);
+    const redirectTo = searchParams.get('from') || '/dashboard';
     
     try {
       if (loginMethod === 'quick') {
         // Use the legacy quick role selection login - this is now working for demo purposes
-        await loginWithRole(selectedRole);
+        console.log(`[LoginPage] Attempting quick login with role: ${selectedRole}`);
+        const user = await loginWithRole(selectedRole);
+        console.log(`[LoginPage] Quick login successful, user: ${user.name}, role: ${user.role}`);
+        
         toast({
           title: 'Quick Login Successful',
           description: `You are now logged in as a ${selectedRole}.`,
@@ -44,15 +50,23 @@ export default function LoginPage() {
         });
       } else {
         // Use the email/password login
-        await performLogin(email, password);
+        console.log(`[LoginPage] Attempting email login for: ${email}`);
+        const user = await performLogin(email, password);
+        console.log(`[LoginPage] Email login successful, user: ${user.name}, role: ${user.role}`);
+        
         toast({
           title: 'Login Successful',
           description: `You are now logged in.`,
           variant: 'default',
-        });      }
+        });
+      }
       
-      // Always redirect to the main dashboard which handles role-based content
-      router.push('/dashboard');
+      // Wait briefly to ensure cookies are set
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Redirect to the destination or dashboard by default
+      console.log(`[LoginPage] Redirecting to: ${redirectTo}`);
+      router.push(redirectTo);
       router.refresh(); // Important to re-fetch layout and user data
     } catch (error) {
       // For demo purposes, let's try the quick login as a fallback

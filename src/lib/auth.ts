@@ -11,11 +11,17 @@ export async function getCurrentUser(): Promise<User | null> {
       return clientSideCurrentUser;
     }
     
-    // Otherwise, fetch the user from the server
+    // Otherwise, fetch the user from the server    
     try {
-      const response = await fetch('/api/auth/me');
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include', // Explicitly include credentials (cookies)
+        cache: 'no-store' // Don't cache the response
+      });
+      
+      console.log('[auth.ts] GET /api/auth/me response status:', response.status);
       if (response.ok) {
         const userData = await response.json();
+        console.log('[auth.ts] GET /api/auth/me response data:', userData ? 'received data' : 'null');
         if (userData) {
           // Always normalize the role when getting user data
           const normalizedRole = normalizeRole(userData.role);
@@ -37,7 +43,6 @@ export async function getCurrentUser(): Promise<User | null> {
       return null;
     }
   }
-  
   // Server-side: Delegate to the cookie-based method
   try {
     const { getServerUser } = await import('../lib/server-auth');
@@ -94,6 +99,7 @@ export async function loginWithRole(role: UserRole): Promise<User> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ role: normalizedRole }),
+      credentials: 'include', // Explicitly include credentials (cookies)
     });
 
     if (!response.ok) {
@@ -128,6 +134,7 @@ export async function login(email: string, password: string): Promise<User> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ email, password }),
+      credentials: 'include', // Explicitly include credentials (cookies)
     });
 
     if (!response.ok) {
@@ -163,6 +170,7 @@ export async function logout(): Promise<void> {
   try {
     const response = await fetch('/api/auth/logout', {
       method: 'POST',
+      credentials: 'include', // Include credentials to ensure cookies are sent
     });
     
     if (!response.ok) {
@@ -177,7 +185,19 @@ export async function logout(): Promise<void> {
     console.log(`[auth.ts] logout: Cleared user session, reset to default role: ${clientSideCurrentUserRole}`);
     
     if (typeof window !== 'undefined') {
+      // Clear any local storage items
       localStorage.removeItem('currentUserRole');
+      
+      // Attempt to clear cookies manually as a backup
+      document.cookie = 'userId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      document.cookie = 'userRole=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      
+      // If we know the domain, also clear domain-specific cookies
+      const domain = window.location.hostname;
+      if (domain) {
+        document.cookie = `userId=; Path=/; Domain=${domain}; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+        document.cookie = `userRole=; Path=/; Domain=${domain}; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+      }
     }
   } catch (error) {
     console.error('[auth.ts] Logout error:', error);

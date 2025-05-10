@@ -42,19 +42,72 @@ export async function middleware(request: NextRequest) {
   // This helps avoid 'Dynamic server usage' errors during build
   if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build') {
     return NextResponse.next();
-  }
-  // For production deployments, check for cookies before redirecting
+  }  // For production deployments, check for cookies before redirecting
   const userRole = request.cookies.get('userRole');
   const userId = request.cookies.get('userId');
   
-  // If the URL path is under /dashboard or other protected routes and no authentication cookies exist
-  if ((!userRole?.value && !userId?.value) && !publicPaths.includes(pathname)) {
+  // Log for debugging
+  console.log(`[Middleware] Path: ${pathname}, UserRole: ${userRole?.value}, UserId: ${userId?.value}`);
+  
+  // Special handling for routes that need auth
+  const protectedRoutes = [
+    '/dashboard',
+    '/progress',
+    '/study-plan',
+    '/teacher',
+    '/admin',
+    '/courses'
+  ];
+  
+  const needsAuth = protectedRoutes.some(route => pathname.startsWith(route));
+  
+  // If the URL path is under protected routes and no authentication cookies exist
+  if (needsAuth && (!userRole?.value && !userId?.value)) {
     // For the demo, redirect to login page
-    console.log(`[Middleware] No auth cookies found for ${pathname}, redirecting to /login`);
-    return NextResponse.redirect(new URL('/login', request.url));
+    console.log(`[Middleware] No auth cookies found for protected path ${pathname}, redirecting to /login`);
+    
+    // Clone the URL to avoid mutating the original
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('from', pathname); // Store original destination
+    
+    return NextResponse.redirect(loginUrl);
   }
   
-  // Continue even if only one of the cookies is present - fallback mechanisms in the components will handle it
+  // Continue with the request but ensure it passes through our modified headers
+  const response = NextResponse.next();
+  
+  // Add Secure attribute for cookies in production
+  if (process.env.NODE_ENV === 'production') {
+    const domain = process.env.NEXT_PUBLIC_APP_DOMAIN || undefined;
+    
+    // Modify headers to help with CORS and cookie issues
+    response.headers.set('Access-Control-Allow-Credentials', 'true');
+    response.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    
+    // If we have cookies, update them to ensure they're properly set
+    if (userId?.value) {
+      response.cookies.set({
+        name: 'userId',
+        value: userId.value,
+        path: '/',
+        sameSite: 'lax',
+        secure: true,
+        domain: domain
+      });
+    }
+    
+    if (userRole?.value) {
+      response.cookies.set({
+        name: 'userRole',
+        value: userRole.value,
+        path: '/',
+        sameSite: 'lax',
+        secure: true,
+        domain: domain
+      });
+    }
+  }
 
 
   return NextResponse.next();

@@ -92,6 +92,30 @@ The project follows Next.js App Router pattern with organized directories for:
 - Utility functions in `src/lib`
 - AI functionality in `src/ai`
 
+## Troubleshooting
+
+### Authentication Issues
+
+If you experience authentication issues (like being redirected to the login page after clicking navigation items):
+
+1. **Clear Browser Cookies**: Remove cookies for the domain and try logging in again
+2. **Try Different Browser**: Some authentication issues may be browser-specific
+3. **Check Console Logs**: Open developer tools (F12) to view authentication-related logs
+4. **Quick Login Method**: If email login fails, try the quick login option by selecting a role
+5. **Verify Network Requests**: Check the Network tab in developer tools to ensure cookies are being set
+
+### Cookie Debugging
+
+To verify if authentication cookies are being set correctly:
+
+1. Log in to the platform
+2. Open browser developer tools (F12)
+3. Go to the "Application" tab (Chrome) or "Storage" tab (Firefox)
+4. Look for cookies named `userId` and `userRole`
+5. Ensure they have proper values and aren't expired
+
+If cookies are missing, try disabling any tracking protection or privacy features in your browser that might block cookies.
+
 ## About
 
 Miftah is designed to empower Moroccan students and educators with the tools they need for success, fostering a collaborative and engaging learning environment.

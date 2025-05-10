@@ -24,13 +24,41 @@ const nextConfig = {
   // Note: Next.js 15 doesn't support 'hybrid' output anymore
   output: 'standalone',
   // Explicitly mark routes that use cookies() as dynamic
-  // This prevents the "Dynamic server usage" errors during build
-  experimental: {
+  // This prevents the "Dynamic server usage" errors during build  experimental: {
     // Disabled CSS optimization due to issues with critters package
     // optimizeCss: true,
     serverActions: {
-      allowedOrigins: ['localhost:3000', 'miftah.vercel.app'],
+      allowedOrigins: ['localhost:3000', 'miftah-edu.vercel.app', 'miftah.vercel.app'],
     },
+  },
+  // Configure headers to help with CORS and cookie handling
+  async headers() {
+    return [
+      {
+        // Apply these headers to all routes
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Credentials',
+            value: 'true',
+          },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: process.env.NODE_ENV === 'production' 
+              ? 'https://miftah-edu.vercel.app' 
+              : 'http://localhost:3000',
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET,OPTIONS,PATCH,DELETE,POST,PUT',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
+          },
+        ],
+      },
+    ];
   },
   // Configure both Webpack and Turbopack to work consistently
   turbo: {
