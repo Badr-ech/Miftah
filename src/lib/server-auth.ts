@@ -156,11 +156,21 @@ export async function getServerUser(): Promise<User | null> {
   try {
     const userId = await getUserIdFromCookies();
     
-    if (userId) {
-      try {
-        // Fetch user from database
+    if (userId) {      try {
+        // Import the MongoDB helper for UUID to ObjectId conversion
+        const { ensureObjectId } = await import('./mongodb-helpers');
+        
+        // Ensure we have a valid MongoDB ObjectId (convert from UUID if necessary)
+        const objectId = ensureObjectId(userId);
+        
+        if (!objectId) {
+          console.error(`[server-auth] Invalid user ID format: ${userId}`);
+          return null;
+        }
+        
+        // Fetch user from database using the converted ID
         const dbUser = await db.user.findUnique({
-          where: { id: userId },
+          where: { id: objectId },
           select: {
             id: true,
             name: true,
@@ -193,8 +203,7 @@ export async function getServerUser(): Promise<User | null> {
     }
       // If no userId or no user found, fallback to role-based method for backward compatibility
     const role = await getUserRoleFromCookies();
-    if (role) {
-      try {
+    if (role) {      try {
         // Find a user with the specified role
         // Cast the role string to match the expected database enum type
         const dbUser = await db.user.findFirst({
@@ -207,6 +216,11 @@ export async function getServerUser(): Promise<User | null> {
             avatarUrl: true
           }
         });
+        
+        // Log for debugging
+        if (!dbUser) {
+          console.log(`[server-auth] No user found with role '${role.toUpperCase()}'`);
+        }
         
         if (dbUser) {        // Normalize role to lowercase for consistency
         const normalizedRole = dbUser.role.toString().toLowerCase();

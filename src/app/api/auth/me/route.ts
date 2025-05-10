@@ -18,8 +18,19 @@ export async function GET(request: Request) {
       return NextResponse.json(null);
     }
     
+    // Import the MongoDB helper functions
+    const { ensureObjectId } = await import('../../../../lib/mongodb-helpers');
+    
+    // Convert UUID to MongoDB ObjectId if necessary
+    const objectId = ensureObjectId(userId);
+    
+    if (!objectId) {
+      console.error(`[auth/me] Invalid user ID format: ${userId}`);
+      return NextResponse.json(null);
+    }
+    
     const user = await db.user.findUnique({
-      where: { id: userId },
+      where: { id: objectId },
       select: {
         id: true,
         name: true,

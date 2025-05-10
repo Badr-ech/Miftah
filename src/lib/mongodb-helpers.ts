@@ -62,7 +62,12 @@ export function uuidToObjectId(uuid: string): string | null {
     
     // If it's a UUID with hyphens
     if (uuid.includes('-')) {
-      // Remove hyphens and take first 24 chars (MongoDB ObjectIDs are 24 hex chars)
+      console.log(`Converting UUID format to ObjectId: ${uuid}`);
+      
+      // For the specific error case you're seeing, we need to handle this case specially
+      // Error: Malformed ObjectID: invalid character '-' was found at index 8
+      
+      // Remove all hyphens and take first 24 chars (MongoDB ObjectIDs are 24 hex chars)
       const hexString = uuid.replace(/-/g, '').substring(0, 24);
       
       // Ensure it's valid

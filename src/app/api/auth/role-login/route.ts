@@ -14,19 +14,20 @@ export async function POST(request: Request) {
       );
     }    // For demo purposes, we'll skip DB lookup and just create a default user
     // This ensures the quick login always works
-    // Generate a proper UUID for the user ID that Postgres will accept
-    function generateUUID() {
-      // This creates a valid UUID v4
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
+    
+    // Import ObjectId from bson to generate MongoDB compatible IDs
+    const { ObjectId } = await import('bson');
+    
+    // Generate a MongoDB ObjectId instead of UUID
+    function generateObjectId() {
+      return new ObjectId().toHexString();
     }
-      // Normalize role for consistency
+      
+    // Normalize role for consistency
     const normalizedRole = role.toLowerCase();
     
     const defaultUser = {
-      id: generateUUID(),
+      id: generateObjectId(),
       name: `Default ${normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1)}`,
       email: `default_${normalizedRole}@example.com`,
       role: normalizedRole,

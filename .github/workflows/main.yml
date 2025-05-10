@@ -121,6 +121,35 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      - name: Test MongoDB Connection
+        run: |
+          echo "Testing MongoDB connection..."
+          npx ts-node -e '
+            const { PrismaClient } = require("./src/generated/prisma");
+            const prisma = new PrismaClient();
+            
+            async function testConnection() {
+              try {
+                console.log("Attempting to connect to MongoDB...");
+                await prisma.$connect();
+                console.log("✅ Successfully connected to MongoDB!");
+                
+                // Try a simple query
+                const count = await prisma.user.count();
+                console.log(`Found ${count} users in the database`);
+                
+                await prisma.$disconnect();
+              } catch (error) {
+                console.error("❌ MongoDB connection failed:", error);
+                process.exit(1);
+              }
+            }
+            
+            testConnection();
+          '
+        env:
+          DATABASE_URL: mongodb://localhost:27017/miftah_test
+        
       # Restore Next.js cache if available
       - name: Restore Next.js cache
         uses: actions/cache@v4

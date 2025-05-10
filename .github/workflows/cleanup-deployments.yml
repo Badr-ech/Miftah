@@ -22,19 +22,33 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        run: |
-          # Install required tools
+        run: |          # Install required tools
           npm install -g vercel
           sudo apt-get update && sudo apt-get install -y jq curl
-
+            # Validate that we have the required tokens
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_PROJECT_ID" ] || [ -z "$VERCEL_ORG_ID" ]; then
+            echo "Error: One or more required environment variables are missing"
+            echo "Make sure VERCEL_TOKEN, VERCEL_PROJECT_ID, and VERCEL_ORG_ID are set in your GitHub repository secrets"
+            exit 1
+          fi
+          
           # Authentication with Vercel
-          vercel login --token $VERCEL_TOKEN
+          echo "Authenticating with Vercel..."
+          # Note: Make sure to properly quote the token
+          vercel login --token="$VERCEL_TOKEN"
 
           echo "Fetching all deployments (including previews)..."
-          
-          # 1. Fetch all deployments (get both production and preview)
+            # 1. Fetch all deployments (get both production and preview)
           DEPLOYMENTS=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
             "https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT_ID&teamId=$VERCEL_ORG_ID&limit=100&state=READY")
+            
+          # Check if the API call was successful
+          API_ERROR=$(echo "$DEPLOYMENTS" | jq -r '.error.message // empty')
+          if [ ! -z "$API_ERROR" ]; then
+            echo "Error fetching deployments: $API_ERROR"
+            echo "Full API response: $DEPLOYMENTS"
+            exit 1
+          fi
 
           # 2. Separate production deployments and preview deployments
           PROD_DEPLOYMENTS=$(echo "$DEPLOYMENTS" | jq -c '.deployments | map(select(.target == "production"))')
