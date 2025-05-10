@@ -9,7 +9,9 @@ import { Alert, AlertTitle, AlertDescription } from '../../../../components/ui/a
 export default async function AdminSettingsPage() {
   const user = await getCurrentUser();
 
-  if (!user || user.role !== 'admin') {
+  // Normalize the role for consistent checking
+  const normalizedRole = user?.role?.toLowerCase();
+  if (!user || normalizedRole !== 'admin') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] gap-4">
         <Alert variant="destructive" className="max-w-md">

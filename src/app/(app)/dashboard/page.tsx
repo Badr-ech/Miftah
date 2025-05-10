@@ -53,7 +53,12 @@ export default async function DashboardPage() {
            <Button asChild><Link href="/login">Go to Login</Link></Button>
       </div>
     );
-  }
+  }  // Normalize the role to lowercase for consistent comparison
+  const normalizedRole = user.role.toLowerCase();
+
+  // Debug information - visible in development
+  console.log(`[DashboardPage] Rendering dashboard for normalized role: ${normalizedRole}`);
+
   return (
     <div className="space-y-6">
       <Card className="shadow-sm">
@@ -62,13 +67,23 @@ export default async function DashboardPage() {
           <CardDescription>Here&apos;s what&apos;s happening on Miftah Platform today.</CardDescription>
         </CardHeader>
       </Card>      
-      {/* Log the actual role value for debugging */}
-      <div className="hidden">{`Debug - User role: "${user.role}" (Type: ${typeof user.role})`}</div>
+      {/* Development helper - will show role in dev tools but not on page */}
+      {process.env.NODE_ENV !== 'production' && (
+        <div className="sr-only">{`Debug - User role: "${user.role}" (Normalized: "${normalizedRole}")`}</div>
+      )}
       
-      {/* Handle various formats of role value that might come from different environments */}
-      {(user.role.toLowerCase() === 'student' || user.role === 'STUDENT') && <StudentDashboard user={user} />}
-      {(user.role.toLowerCase() === 'teacher' || user.role === 'TEACHER') && <TeacherDashboard user={user} />}
-      {(user.role.toLowerCase() === 'admin' || user.role === 'ADMIN') && <AdminDashboard user={user} />}
+      {/* Rendering the appropriate dashboard based on normalized role */}
+      {normalizedRole === 'student' && <StudentDashboard user={user} />}
+      {normalizedRole === 'teacher' && <TeacherDashboard user={user} />}
+      {normalizedRole === 'admin' && <AdminDashboard user={user} />}
+      
+      {/* Fallback for unknown roles */}
+      {!['student', 'teacher', 'admin'].includes(normalizedRole) && (
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-700">
+          <p>Unknown user role: {user.role}</p>
+          <p>Please contact support if you believe this is an error.</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -105,6 +105,9 @@ export default async function AppLayout({
 }
 
 function getNavItems(role: User['role']): NavItem[] {
+  // Normalize the role to lowercase for consistency
+  const normalizedRole = role.toLowerCase() as User['role'];
+  
   const baseItems: NavItem[] = [
     { title: 'Dashboard', href: '/dashboard', icon: Home, roles: ['student', 'teacher', 'admin'] },
     { title: 'Courses', href: '/courses', icon: BookOpen, roles: ['student', 'teacher', 'admin'] },
@@ -127,9 +130,13 @@ function getNavItems(role: User['role']): NavItem[] {
   ];
 
   let roleSpecificItems: NavItem[] = [];
-  if (role === 'student') roleSpecificItems = studentItems;
-  else if (role === 'teacher') roleSpecificItems = teacherItems;
-  else if (role === 'admin') roleSpecificItems = adminItems;
+  if (normalizedRole === 'student') roleSpecificItems = studentItems;
+  else if (normalizedRole === 'teacher') roleSpecificItems = teacherItems;
+  else if (normalizedRole === 'admin') roleSpecificItems = adminItems;
+  else {
+    console.warn(`[layout.tsx] Unknown role format: ${role}, defaulting to student items`);
+    roleSpecificItems = studentItems;
+  }
   
-  return [...baseItems, ...roleSpecificItems].filter(item => item.roles?.includes(role));
+  return [...baseItems, ...roleSpecificItems].filter(item => item.roles?.includes(normalizedRole));
 }

@@ -24,13 +24,33 @@ export async function POST(request: Request) {
     }
       
     // Normalize role for consistency
-    const normalizedRole = role.toLowerCase();
+    // First handle any possible case variations
+    let normalizedRole;
+    
+    if (typeof role === 'string') {
+      const lowerRole = role.toLowerCase();
+      if (['student', 'teacher', 'admin'].includes(lowerRole)) {
+        normalizedRole = lowerRole;
+      } else {
+        // Try to handle uppercase formats or other variants
+        const upperRole = role.toUpperCase();
+        if (upperRole === 'STUDENT') normalizedRole = 'student';
+        else if (upperRole === 'TEACHER') normalizedRole = 'teacher';
+        else if (upperRole === 'ADMIN') normalizedRole = 'admin';
+        else normalizedRole = 'student'; // Default to student if unrecognized
+      }
+    } else {
+      // If role is somehow not a string, default to student
+      normalizedRole = 'student';
+    }
+    
+    console.log(`[role-login] Normalized role from '${role}' to '${normalizedRole}'`);
     
     const defaultUser = {
       id: generateObjectId(),
       name: `Default ${normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1)}`,
       email: `default_${normalizedRole}@example.com`,
-      role: normalizedRole,
+      role: normalizedRole, // Always use normalized lowercase role
       avatarUrl: `https://picsum.photos/seed/${normalizedRole}/100/100`
     };
     

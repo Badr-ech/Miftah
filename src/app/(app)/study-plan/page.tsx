@@ -2,7 +2,7 @@
 'use client';
 
 import type { NextPage } from 'next';
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode, useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { GenerateStudyPlanInputSchema, type GenerateStudyPlanInput, type GenerateStudyPlanOutput } from '../../../ai/schemas/study-plan-schemas';
@@ -17,12 +17,48 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '..
 import { Loader2, Wand2, CheckCircle, AlertTriangle, ListChecks, BookOpen, Clock, Lightbulb } from 'lucide-react';
 import { useToast } from '../../../hooks/use-toast';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../../../components/ui/form";
+import { useRouter } from 'next/navigation';
+import { getCurrentUser } from '../../../lib/auth';
 
 const StudyPlanPage: NextPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [studyPlan, setStudyPlan] = useState<GenerateStudyPlanOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
+
+  // Check authentication on component mount
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const user = await getCurrentUser();
+        if (!user) {
+          // No user found, redirect to login
+          console.log("[StudyPlanPage] No user found, redirecting to login");
+          toast({
+            title: "Authentication required",
+            description: "Please log in to access the Study Plan page",
+            variant: "destructive",
+          });
+          router.push('/login');
+          return;
+        }
+        
+        // If authentication is successful, mark auth as checked
+        setAuthChecked(true);
+        
+        // Log the role for debugging
+        console.log("[StudyPlanPage] User authenticated with role:", user.role);
+      } catch (error) {
+        console.error("[StudyPlanPage] Error checking authentication:", error);
+        // If there's an error, it's safer to redirect to login
+        router.push('/login');
+      }
+    }
+    
+    checkAuth();
+  }, [router, toast]);
 
   const form = useForm<GenerateStudyPlanInput>({
     resolver: zodResolver(GenerateStudyPlanInputSchema),

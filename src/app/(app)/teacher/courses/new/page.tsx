@@ -10,7 +10,9 @@ import { NewCourseForm } from './new-course-form';
 export default async function NewCoursePage() {
   const user = await getCurrentUser();
 
-  if (!user || (user.role.toUpperCase() !== 'TEACHER' && user.role !== 'teacher')) {
+  // Normalize the role for consistent checking
+  const normalizedRole = user?.role?.toLowerCase();
+  if (!user || normalizedRole !== 'teacher') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] gap-4">
         <Alert variant="destructive" className="max-w-md">

@@ -5,11 +5,12 @@ import { getServerUser } from '../../../../lib/server-auth';
 export async function GET(
   request: Request
 ) {
-  try {
-    const user = await getServerUser();
+  try {    const user = await getServerUser();
     
-    // Only students can view their progress
-    if (!user || user.role !== 'student') {
+    // Only students can view their progress - normalize role for consistency
+    const normalizedRole = user?.role?.toLowerCase();
+    if (!user || normalizedRole !== 'student') {
+      console.warn(`[API progress] Access denied: user role ${user?.role} (normalized: ${normalizedRole})`);
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

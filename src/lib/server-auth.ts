@@ -25,17 +25,28 @@ export async function getUserRoleFromCookies(): Promise<UserRole | null> {
     }
     
     const roleCookie = cookieStore.get('userRole');
+    const userIdCookie = cookieStore.get('userId');
     
     // Don't log in production to avoid excessive logs
     if (process.env.NODE_ENV !== 'production') {
       console.log(`[server-auth] getUserRoleFromCookies: Raw cookie value is '${roleCookie?.value}'`);
+      console.log(`[server-auth] getUserRoleFromCookies: User ID cookie exists: ${!!userIdCookie}`);
     }
-      // Validate the role value - handle case insensitivity
-    if (roleCookie) {
+    
+    // Validate the role value - always normalize to lowercase
+    if (roleCookie && roleCookie.value) {
       const lowerCaseRole = roleCookie.value.toLowerCase();
+      
+      // Map recognized roles to our standard lowercase format
       if (lowerCaseRole === 'student' || lowerCaseRole === 'teacher' || lowerCaseRole === 'admin') {
         return lowerCaseRole as UserRole;
       } else {
+        // Try handling any uppercase variants
+        const upperCaseRole = roleCookie.value.toUpperCase();
+        if (upperCaseRole === 'STUDENT') return 'student';
+        if (upperCaseRole === 'TEACHER') return 'teacher';
+        if (upperCaseRole === 'ADMIN') return 'admin';
+        
         console.warn(`[server-auth] getUserRoleFromCookies: Invalid role value in cookie: '${roleCookie.value}'`);
       }
     }

@@ -108,10 +108,12 @@ export async function GET(
 export async function POST(
   request: Request
 ) {
-  try {
-    const user = await getServerUser();
-      // Only teachers can create courses
-    if (!user || user.role !== 'teacher') {
+  try {    const user = await getServerUser();
+    
+    // Only teachers can create courses - normalize role
+    const normalizedRole = user?.role?.toLowerCase();
+    if (!user || normalizedRole !== 'teacher') {
+      console.warn(`[API courses] Access denied: user role ${user?.role} (normalized: ${normalizedRole})`);
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
