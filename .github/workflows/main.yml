@@ -17,7 +17,8 @@ jobs:
   # This job handles building and testing the Next.js application with TypeScript
   build-and-test:
     runs-on: ubuntu-latest
-
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     # Set up MongoDB service for tests
     services:
       mongodb:
