@@ -14,7 +14,7 @@ on:
 
 env:
   NODE_ENV: test
-  DATABASE_URL: mongodb://localhost:27017/miftah_test
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
 jobs:
   # This job handles building and testing the Next.js application with TypeScript
@@ -51,13 +51,13 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
         env:
-          DATABASE_URL: mongodb://localhost:27017/miftah_test
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
             
       # Push schema to MongoDB test database
       - name: Push schema to MongoDB database
         run: npx prisma db push --force-reset
         env:
-          DATABASE_URL: mongodb://localhost:27017/miftah_test
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
       # Run tests
       - name: Run tests
@@ -91,7 +91,7 @@ jobs:
           GOOGLEAI_API_KEY: dummy-key-for-ci
           NEXT_PUBLIC_API_URL: https://api-staging.example.com
           GENKIT_API_KEY: dummy-key-for-ci
-          DATABASE_URL: mongodb://localhost:27017/miftah_test
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
   # Deploy to production 
   deploy:
@@ -120,13 +120,13 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
         env:
-          DATABASE_URL: mongodb://localhost:27017/miftah_test
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
       # Note: Don't run actual migrations in CI, just validate the schema
       - name: Validate DB Schema
         run: npx prisma validate
         env:
-          DATABASE_URL: mongodb://localhost:27017/miftah_test
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           
       # Deploy to Vercel
       - name: Deploy to Vercel
