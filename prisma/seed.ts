@@ -1,4 +1,4 @@
-﻿import { PrismaClient } from '../src/generated/prisma';
+﻿import { PrismaClient } from '../src/generated/prisma/client';
 import { hash } from 'bcryptjs';
 import { ObjectId } from 'bson';
 
