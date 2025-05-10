@@ -1,0 +1,140 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+// This is a simplified middleware for handling authentication in the Miftah application
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Always allow access to these public paths
+  const publicPaths = ['/login', '/logout', '/'];
+  if (publicPaths.includes(pathname) || 
+      pathname.startsWith('/_next/') || 
+      pathname.startsWith('/api/') || 
+      pathname.includes('.')) {
+    // Add debugging header for public paths
+    const response = NextResponse.next();
+    response.headers.set('x-miftah-auth', 'public-path');
+    return response;
+  }
+
+  // Skip authentication during static site generation to avoid build errors
+  if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.next();
+  }
+
+  // Get authentication cookies
+  const userIdCookie = request.cookies.get('userId');
+  const userRoleCookie = request.cookies.get('userRole');
+  
+  // Enhanced logging for debugging authentication issues
+  console.log(`[middleware] Auth check for ${pathname}`, {
+    origin: request.headers.get('origin') || 'unknown',
+    hasUserIdCookie: !!userIdCookie,
+    hasUserRoleCookie: !!userRoleCookie,
+    cookieHeader: request.headers.get('cookie')?.substring(0, 100) || 'none',
+  });
+
+  // Allow access if user has auth cookies
+  if (userIdCookie || userRoleCookie) {
+    const authResponse = NextResponse.next();
+    authResponse.headers.set('x-miftah-auth', 'authorized');
+    return authResponse;
+  }
+  
+  // No auth cookies, redirect to login
+  console.log(`[middleware] No auth cookies found, redirecting to login`);
+  const loginUrl = new URL('/login', request.url);
+  
+  // Add the original URL as a 'from' parameter to redirect back after login
+  loginUrl.searchParams.set('from', pathname);
+  
+  const redirectResponse = NextResponse.redirect(loginUrl);
+  redirectResponse.headers.set('x-miftah-auth-redirect', 'true');
+  return redirectResponse;  // Skip authentication checks during production build for static routes
+  // This helps avoid 'Dynamic server usage' errors during static site generation
+  if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.next();
+  }
+  
+  // Log for debugging
+  console.log(`[Middleware] Path: ${pathname}, UserRole: ${userRole?.value}, UserId: ${userId?.value}`);
+  
+  // Special handling for routes that need auth
+  const protectedRoutes = [
+    '/dashboard',
+    '/progress',
+    '/study-plan',
+    '/teacher',
+    '/admin',
+    '/courses'
+  ];
+  
+  const needsAuth = protectedRoutes.some(route => pathname.startsWith(route));
+  
+  // If the URL path is under protected routes and no authentication cookies exist
+  if (needsAuth && (!userRole?.value && !userId?.value)) {
+    // For the demo, redirect to login page
+    console.log(`[Middleware] No auth cookies found for protected path ${pathname}, redirecting to /login`);
+    
+    // Clone the URL to avoid mutating the original
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('from', pathname); // Store original destination
+    
+    return NextResponse.redirect(loginUrl);
+  }
+  
+  // Continue with the request but ensure it passes through our modified headers
+  const response = NextResponse.next();
+  
+  // Add Secure attribute for cookies in production
+  if (process.env.NODE_ENV === 'production') {
+    const domain = process.env.NEXT_PUBLIC_APP_DOMAIN || undefined;
+    
+    // Modify headers to help with CORS and cookie issues
+    response.headers.set('Access-Control-Allow-Credentials', 'true');
+    response.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    
+    // If we have cookies, update them to ensure they're properly set
+    if (userId?.value) {
+      response.cookies.set({
+        name: 'userId',
+        value: userId.value,
+        path: '/',
+        sameSite: 'lax',
+        secure: true,
+        domain: domain
+      });
+    }
+    
+    if (userRole?.value) {
+      response.cookies.set({
+        name: 'userRole',
+        value: userRole.value,
+        path: '/',
+        sameSite: 'lax',
+        secure: true,
+        domain: domain
+      });
+    }
+  }
+
+
+  return NextResponse.next();
+}
+
+// See "Matching Paths" below to learn more
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
+};
+
+// We're also adding dynamic route handling in page files

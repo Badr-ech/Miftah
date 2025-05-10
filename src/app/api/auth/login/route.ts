@@ -97,16 +97,34 @@ export async function POST(request: Request) {
         role: user.role.toLowerCase(),
         avatarUrl: user.avatarUrl
       });
+        // Get deployment URL from env or use a fallback
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+      // Extract domain if available (for production)
+      let domain = undefined;
+      try {
+        if (appUrl) {
+          domain = new URL(appUrl).hostname;
+          // If domain is an IP address, don't set it
+          if (/^\d+\.\d+\.\d+\.\d+$/.test(domain)) {
+            domain = undefined;
+          }
+        }
+      } catch (e) {
+        console.error('[auth/login] Error parsing APP_URL:', e);
+      }
+
+      console.log(`[auth/login] Setting cookies with domain: ${domain || 'undefined'}`);
       
-      // Set cookies for authentication
+      // Set cookies for authentication with improved cross-environment settings
       response.cookies.set({
         name: 'userId',
         value: user.id,
         path: '/',
         maxAge: 60 * 60 * 24 * 7, // 7 days
         httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax', // Lax allows cookies in navigation from external sites
+        secure: process.env.NODE_ENV === 'production', // Only require HTTPS in production
+        domain: domain, // Set domain in production
       });
       
       response.cookies.set({
@@ -117,6 +135,7 @@ export async function POST(request: Request) {
         httpOnly: true,
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
+        domain: domain, // Set domain in production
       });
       
       return response;

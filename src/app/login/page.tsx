@@ -62,13 +62,32 @@ export default function LoginPage() {
           variant: 'default',
         });
       }
+        // Wait longer to ensure cookies are set properly, especially in production
+      const waitTime = process.env.NODE_ENV === 'production' ? 800 : 300;
+      console.log(`[LoginPage] Waiting ${waitTime}ms for cookies to be set...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
       
-      // Wait briefly to ensure cookies are set
-      await new Promise(resolve => setTimeout(resolve, 300));
-        // Redirect to the destination or dashboard by default
+      // Store logged in state in localStorage as a fallback mechanism
+      try {
+        localStorage.setItem('miftah_user_loggedin', 'true');
+        localStorage.setItem('miftah_user_role', selectedRole || 'student');
+        localStorage.setItem('miftah_login_timestamp', Date.now().toString());
+      } catch (storageError) {
+        console.warn('[LoginPage] Could not write to localStorage:', storageError);
+      }
+        
+      // Redirect to the destination or dashboard by default
       console.log(`[LoginPage] Redirecting to: ${redirectTo}`);
-      router.push(redirectTo);
-      router.refresh(); // Important to re-fetch layout and user data
+      
+      // Use window.location for hard redirect in production to ensure clean state
+      if (process.env.NODE_ENV === 'production') {
+        console.log('[LoginPage] Using window.location for hard redirect in production');
+        window.location.href = redirectTo;
+      } else {
+        // Use router in development for better debugging
+        router.push(redirectTo);
+        router.refresh(); // Important to re-fetch layout and user data
+      }
     } catch (error) {
       console.error('[LoginPage] Login error:', error);
       
@@ -87,10 +106,23 @@ export default function LoginPage() {
             description: `Login successful with demo credentials as ${fallbackRole}.`,
             variant: 'default',
           });
+            // Store logged in state in localStorage as a fallback mechanism
+          try {
+            localStorage.setItem('miftah_user_loggedin', 'true');
+            localStorage.setItem('miftah_user_role', fallbackRole);
+            localStorage.setItem('miftah_login_timestamp', Date.now().toString());
+          } catch (storageError) {
+            console.warn('[LoginPage] Could not write to localStorage:', storageError);
+          }
           
           // Always redirect to the main dashboard regardless of role
-          router.push('/dashboard');
-          router.refresh();
+          if (process.env.NODE_ENV === 'production') {
+            // Use window.location for hard redirect in production
+            window.location.href = '/dashboard';
+          } else {
+            router.push('/dashboard');
+            router.refresh();
+          }
           return;
         } catch (fallbackError) {
           console.error('[LoginPage] Fallback login also failed:', fallbackError);
