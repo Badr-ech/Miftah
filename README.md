@@ -54,7 +54,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ### Deployed Version
 
 You can also access the deployed version of Miftah at:
-[https://miftah-edu.vercel.app](https://miftah-edu.vercel.app)
+[https://miftah-eight.vercel.app/](https://miftah-eight.vercel.app/)
 
 ## Authentication
 
