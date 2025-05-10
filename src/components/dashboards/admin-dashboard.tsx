@@ -1,6 +1,7 @@
 'use client';
 
-import type { User } from '../../types';
+import React from 'react';
+import type { User, Course } from '../../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import Link from 'next/link';
@@ -40,16 +41,15 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
         
         // Calculate stats
         const totalUsers = users.length;
-        const totalCourses = courses.length;
-        const totalTeachers = users.filter((u: any) => u.role === 'TEACHER').length;
-        const totalStudents = users.filter((u: any) => u.role === 'STUDENT').length;
-        const totalAdmins = users.filter((u: any) => u.role === 'ADMIN').length;
+        const totalCourses = courses.length;        const totalTeachers = users.filter((u: User) => u.role === 'TEACHER').length;
+        const totalStudents = users.filter((u: User) => u.role === 'STUDENT').length;
+        const totalAdmins = users.filter((u: User) => u.role === 'ADMIN').length;
         
         // Count courses by category
         const courseCounts = {
-          Primary: courses.filter((c: any) => c.category === 'Primary').length,
-          Middle: courses.filter((c: any) => c.category === 'Middle').length,
-          Secondary: courses.filter((c: any) => c.category === 'Secondary').length
+          Primary: courses.filter((c: Course) => c.category === 'Primary').length,
+          Middle: courses.filter((c: Course) => c.category === 'Middle').length,
+          Secondary: courses.filter((c: Course) => c.category === 'Secondary').length
         };
         
         setStats({

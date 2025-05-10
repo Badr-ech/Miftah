@@ -1,3 +1,4 @@
+import React from 'react';
 import type { User, EnrolledCourse, StudentProgress } from '../../types';
 import { mockStudentProgress } from '../../lib/mock-data'; // We'll keep this for now, but replace it later
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';

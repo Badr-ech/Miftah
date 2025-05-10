@@ -1,4 +1,5 @@
 // filepath: c:\Miftah\src\app\(app)\teacher\courses\new\page.tsx
+import React from 'react';
 import { Button } from '../../../../../components/ui/button';
 import Link from 'next/link';
 import { AlertCircle } from 'lucide-react';

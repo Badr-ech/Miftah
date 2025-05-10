@@ -1,3 +1,4 @@
+import React from 'react';
 import type { User, UserRole } from '../types';
 
 // This variable is module-scoped for client-side immediate use

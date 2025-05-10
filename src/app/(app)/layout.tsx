@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '../../components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
 import { MainAppNav } from '../../components/layout/main-app-nav';

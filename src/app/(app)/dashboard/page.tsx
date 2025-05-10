@@ -1,4 +1,6 @@
+import React from 'react';
 import { getServerUser } from '../../../lib/server-auth';
+import type { UserRole } from '../../../types';
 import { StudentDashboard } from '../../../components/dashboards/student-dashboard';
 import { TeacherDashboard } from '../../../components/dashboards/teacher-dashboard';
 import { AdminDashboard } from '../../../components/dashboards/admin-dashboard';
@@ -23,7 +25,7 @@ export default async function DashboardPage() {
           id: '00000000-0000-0000-0000-000000000000',
           name: `Demo ${userRoleCookie.charAt(0).toUpperCase() + userRoleCookie.slice(1)}`,
           email: `demo_${userRoleCookie}@example.com`,
-          role: userRoleCookie as any,
+          role: userRoleCookie as UserRole,
           avatarUrl: `https://picsum.photos/seed/${userRoleCookie}/100/100`
         };
         console.log(`[DashboardPage] Created demo user for role: ${userRoleCookie}`);

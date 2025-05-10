@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Course, CourseMaterial, Assignment } from '../../../../types';
 import { getCurrentUser } from '../../../../lib/auth';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../../../components/ui/card';

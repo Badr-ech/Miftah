@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { getCurrentUser } from '../../../../lib/auth';
 import { mockCourses } from '../../../../lib/mock-data';
 import type { Course, User } from '../../../../types';

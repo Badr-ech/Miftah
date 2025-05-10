@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { getCurrentUser } from '../../../../lib/auth';
 import { mockCourses, mockStudentProgress } from '../../../../lib/mock-data';
 import type { Course, StudentProgress as StudentProgressType, AssignmentSubmission } from '../../../../types';

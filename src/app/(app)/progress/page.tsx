@@ -1,3 +1,4 @@
+import React from 'react';
 import { getCurrentUser } from '../../../lib/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../../../components/ui/card';
 import { Progress } from '../../../components/ui/progress';

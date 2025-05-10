@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { getCurrentUser } from '../../../../lib/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { Button } from '../../../../components/ui/button';
@@ -70,7 +71,7 @@ export default async function AdminHealthPage() {
         </CardHeader>
         <CardContent>
             <div className="h-64 bg-muted/50 rounded-md p-4 text-sm text-muted-foreground overflow-auto">
-                <p>[{new Date().toLocaleString()}] INFO: User 'admin_001' accessed health page.</p>
+                <p>[{new Date().toLocaleString()}] INFO: User &apos;admin_001&apos; accessed health page.</p>
                 <p>[{new Date(Date.now() - 5*60000).toLocaleString()}] INFO: Database connection successful.</p>
                 <p>[{new Date(Date.now() - 10*60000).toLocaleString()}] WARN: High CPU usage detected on API server (mock).</p>
                  {/* More logs would be dynamically loaded here */}

@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { z } from 'zod';
 
 export const GenerateStudyPlanInputSchema = z.object({

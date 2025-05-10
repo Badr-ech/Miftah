@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '../../components/ui/button';
@@ -67,8 +68,7 @@ export default function LoginPage() {
       // Redirect to the destination or dashboard by default
       console.log(`[LoginPage] Redirecting to: ${redirectTo}`);
       router.push(redirectTo);
-      router.refresh(); // Important to re-fetch layout and user data
-    } catch (error) {
+      router.refresh(); // Important to re-fetch layout and user data    } catch (_error) {
       // For demo purposes, let's try the quick login as a fallback
       if (loginMethod === 'email') {
         try {

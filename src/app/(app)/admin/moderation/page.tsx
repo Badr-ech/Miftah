@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { getCurrentUser } from '../../../../lib/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { Button } from '../../../../components/ui/button';
@@ -66,7 +67,7 @@ export default async function AdminModerationPage() {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="font-semibold text-foreground">Type: {item.type} <span className="text-xs text-muted-foreground">({item.status})</span></p>
-                          <p className="text-sm text-muted-foreground mt-1 italic">"{item.contentSnippet}"</p>
+                          <p className="text-sm text-muted-foreground mt-1 italic">&ldquo;{item.contentSnippet}&rdquo;</p>
                           <p className="text-xs text-muted-foreground mt-1">Reported by: {item.reportedBy} on {new Date(item.date).toLocaleDateString()}</p>
                         </div>
                         <Button variant="outline" size="sm" disabled>Review (Soon)</Button>

@@ -1,3 +1,4 @@
+import React from 'react';
 declare class AnyNull extends NullTypesEnumValue {
     #private;
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import {
   DropdownMenu,
@@ -8,13 +9,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import type { User } from '@/types';
+} from '../../components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
+import { Button } from '../../components/ui/button';
+import type { User } from '../../types';
 import { LogOut, UserCircle, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { logout as performLogout } from '@/lib/auth';
+import { logout as performLogout } from '../../lib/auth';
 
 
 interface MainAppNavProps {

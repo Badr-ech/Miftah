@@ -8,10 +8,15 @@ export async function GET(
   try {    const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const query = searchParams.get('query');
-    const teacherId = searchParams.get('teacherId');
-
-    // Build filter conditions based on parameters
-    const whereCondition: any = {};
+    const teacherId = searchParams.get('teacherId');    // Build filter conditions based on parameters
+    const whereCondition: {
+      category?: string;
+      teacherId?: string;
+      OR?: Array<{
+        title?: { contains: string; mode: 'insensitive' };
+        description?: { contains: string; mode: 'insensitive' };
+      }>;
+    } = {};
 
     if (category) {
       whereCondition.category = category;

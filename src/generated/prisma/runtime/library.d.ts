@@ -1,4 +1,5 @@
 /**
+import React from 'react';
  * @param this
  */
 declare function $extends(this: Client, extension: ExtensionArgs | ((client: Client) => Client)): Client;

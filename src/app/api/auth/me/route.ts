@@ -30,11 +30,10 @@ export async function GET(request: Request) {
         try {
           // Find a user with the specified role
           const normalizedRole = userRole.toLowerCase();
-          
-          // Use the normalized role to find a matching user
+            // Use the normalized role to find a matching user
           const user = await db.user.findFirst({
             where: { 
-              role: normalizedRole.toUpperCase() as any 
+              role: normalizedRole.toUpperCase() as "ADMIN" | "TEACHER" | "STUDENT"
             },
             select: {
               id: true,

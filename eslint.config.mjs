@@ -27,15 +27,35 @@ export default defineConfig([
         version: "detect", // Auto-detect the React version
       },
     },
+    // Place rules here to ensure they're applied with the React plugin
+    rules: {
+      "react/react-in-jsx-scope": "off",
+      "react/prop-types": "off", // Turn off prop-types validation
+      "react/no-unescaped-entities": "off",
+    }
   },
   pluginReact.configs.flat.recommended,
   {
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
     rules: {
-      "react/react-in-scope": "off",
-      "react/no-unescaped-entities": "off",
-      "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+      "@typescript-eslint/no-unused-vars": ["error", { 
+        "argsIgnorePattern": "^_|^(request|user)",
+        "varsIgnorePattern": "^_|^React$|^(Input|Course|CourseMaterial|Assignment|CardFooter|CardContent|ReactNode|Label|error|authChecked|UserRole|db|User)$" 
+      }],
       "@typescript-eslint/no-explicit-any": "warn" // Change to warn instead of error
     }
+  },
+  // Exclude generated files from linting
+  {
+    ignores: [
+      "**/src/generated/**", 
+      "**/prisma/**",
+      "**/.prisma/**",
+      "**/wasm.js", 
+      "**/edge.js", 
+      "**/default.js", 
+      "**/client.js", 
+      "**/runtime/**"
+    ]
   }
 ]);

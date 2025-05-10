@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../../components/ui/card';
@@ -13,7 +14,12 @@ import type { CourseCategory } from '../../../../../types';
 import { useToast } from '../../../../../hooks/use-toast';
 
 interface NewCourseFormProps {
-  user: any;
+  user: {
+    id: string;
+    name?: string;
+    email?: string;
+    role: string;
+  };
 }
 
 export function NewCourseForm({ user }: NewCourseFormProps) {
@@ -72,11 +78,10 @@ export function NewCourseForm({ user }: NewCourseFormProps) {
       });
       
       // Redirect to the course edit page
-      router.push(`/teacher/courses/${newCourse.id}/edit`);
-    } catch (error: any) {
+      router.push(`/teacher/courses/${newCourse.id}/edit`);    } catch (error) {
       toast({
         title: "Error creating course",
-        description: error.message || "An unexpected error occurred",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {

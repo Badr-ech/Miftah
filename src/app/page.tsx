@@ -1,3 +1,4 @@
+import React from 'react';
 import { Button } from '../components/ui/button';
 import { MainNav } from '../components/layout/main-nav';
 import Link from 'next/link';
@@ -88,7 +89,7 @@ export default function HomePage() {
                   About Miftah
                 </h2>
                 <p className="text-muted-foreground mb-4">
-                  Miftah, meaning 'key' in Arabic, is an initiative to revolutionize education in Morocco by providing a modern, accessible, and comprehensive e-learning platform.
+                  Miftah, meaning &apos;key&apos; in Arabic, is an initiative to revolutionize education in Morocco by providing a modern, accessible, and comprehensive e-learning platform.
                 </p>
                 <p className="text-muted-foreground mb-4">
                   Our mission is to empower students and educators with the tools they need for success, fostering a collaborative and engaging learning environment.

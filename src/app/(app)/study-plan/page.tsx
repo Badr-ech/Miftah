@@ -2,6 +2,7 @@
 'use client';
 
 import type { NextPage } from 'next';
+import React from 'react';
 import { useState, type ReactNode, useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -382,7 +383,7 @@ const StudyPlanPage: NextPage = () => {
                 <h3 className="text-xl font-semibold mb-3 flex items-center">
                   <Lightbulb className="mr-2 h-5 w-5 text-primary" /> Motivational Tip
                 </h3>
-                <p className="text-muted-foreground italic">"{studyPlan.motivationalTip}"</p>
+                <p className="text-muted-foreground italic">&ldquo;{studyPlan.motivationalTip}&rdquo;</p>
               </div>
             )}
           </CardContent>

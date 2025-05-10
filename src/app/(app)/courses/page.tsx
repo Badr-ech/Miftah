@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Course, CourseCategory } from '../../../types';
 import { CourseCard } from '../../../components/course-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
