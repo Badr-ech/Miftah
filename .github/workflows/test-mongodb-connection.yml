@@ -1,0 +1,56 @@
+name: Test MongoDB Connection
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-mongodb-connection:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      # Generate Prisma client
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          
+      # Test connection to MongoDB Atlas
+      - name: Test MongoDB Connection
+        run: |
+          echo "Testing MongoDB connection..."
+          node -e "
+            const { PrismaClient } = require('./src/generated/prisma/client');
+            const prisma = new PrismaClient();
+            
+            async function testConnection() {
+              console.log('Attempting to connect to MongoDB...');
+              try {
+                // Try a simple query to test connection
+                const count = await prisma.user.count();
+                console.log('✅ Successfully connected to MongoDB!');
+                console.log(`Total users: ${count}`);
+                process.exit(0);
+              } catch (error) {
+                console.error('❌ MongoDB connection failed:', error);
+                process.exit(1);
+              } finally {
+                await prisma.$disconnect();
+              }
+            }
+            
+            testConnection();
+          "
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

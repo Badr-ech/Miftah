@@ -22,10 +22,15 @@ prisma.$on('query', (e) => {
 
 async function main() {
   console.log('Testing MongoDB connection...');
-  console.log(`Using connection URL: ${process.env.DATABASE_URL.replace(/\/\/([^@]*)@/, '//***:***@')}`);
+  console.log(`Using connection URL: ${process.env.DATABASE_URL ? process.env.DATABASE_URL.replace(/\/\/([^@]*)@/, '//***:***@') : 'DATABASE_URL is not defined!'}`);
 
   try {
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL environment variable is not set. Please check your .env file.');
+    }
+    
     // Test the connection
+    console.log('Attempting to connect to MongoDB...');
     await prisma.$connect();
     console.log('✅ Successfully connected to MongoDB!');
 
