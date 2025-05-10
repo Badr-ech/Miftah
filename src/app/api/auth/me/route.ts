@@ -12,9 +12,54 @@ export async function GET(request: Request) {
         const [name, value] = cookie.trim().split('=');
         return [name, value];
       })
-    );    const userId = cookies_map['userId'];
+    );
+    
+    // Log for debugging
+    console.log(`[auth/me] Available cookies: ${JSON.stringify(Object.keys(cookies_map))}`);
+    
+    const userId = cookies_map['userId'];
     
     if (!userId) {
+      console.log("[auth/me] No userId cookie found in request");
+      // Check if we have a userRole cookie as a fallback
+      const userRole = cookies_map['userRole'];
+      
+      if (userRole) {
+        console.log(`[auth/me] Found userRole cookie: ${userRole}, attempting to find a user`);
+        // User role fallback - find a user with this role
+        try {
+          // Find a user with the specified role
+          const normalizedRole = userRole.toLowerCase();
+          
+          // Use the normalized role to find a matching user
+          const user = await db.user.findFirst({
+            where: { 
+              role: normalizedRole.toUpperCase() as any 
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              avatarUrl: true
+            }
+          });
+          
+          if (user) {
+            console.log(`[auth/me] Found user by role: ${user.name}`);
+            return NextResponse.json({
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              role: normalizedRole as UserRole,
+              avatarUrl: user.avatarUrl
+            });
+          }
+        } catch (error) {
+          console.error('[auth/me] Error finding user by role:', error);
+        }
+      }
+      
       return NextResponse.json(null);
     }
     

@@ -36,6 +36,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      # Generate GenKit AI models
+      - name: Generate GenKit models
+        run: npm run genkit:dev
+        env:
+          GENKIT_API_KEY: ${{ secrets.GENKIT_API_KEY != '' && secrets.GENKIT_API_KEY || 'dummy-key-for-ci' }}
+          
       # Test MongoDB Atlas connection
       - name: Test MongoDB Atlas connection
         run: |
@@ -141,6 +147,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      # Generate GenKit AI models for production
+      - name: Generate GenKit models
+        run: npm run genkit:dev
+        env:
+          GENKIT_API_KEY: ${{ secrets.GENKIT_API_KEY }}
+          
       - name: Test MongoDB Connection
         run: |
           echo "Testing MongoDB connection..."

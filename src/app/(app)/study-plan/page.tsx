@@ -27,15 +27,29 @@ const StudyPlanPage: NextPage = () => {
   const { toast } = useToast();
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
-
   // Check authentication on component mount
   useEffect(() => {
+    let authCheckAttempts = 0;
+    const maxAttempts = 3;
+    
     async function checkAuth() {
       try {
+        authCheckAttempts++;
+        console.log(`[StudyPlanPage] Checking authentication (attempt ${authCheckAttempts})`);
+        
         const user = await getCurrentUser();
         if (!user) {
-          // No user found, redirect to login
-          console.log("[StudyPlanPage] No user found, redirecting to login");
+          console.log("[StudyPlanPage] No user found in getCurrentUser response");
+          
+          // Try again if we haven't reached max attempts
+          if (authCheckAttempts < maxAttempts) {
+            console.log(`[StudyPlanPage] Retrying authentication check... (${authCheckAttempts}/${maxAttempts})`);
+            setTimeout(checkAuth, 1000); // Wait 1 second before retrying
+            return;
+          }
+          
+          // Max attempts reached, redirect to login
+          console.log("[StudyPlanPage] Max authentication attempts reached, redirecting to login");
           toast({
             title: "Authentication required",
             description: "Please log in to access the Study Plan page",
@@ -48,11 +62,32 @@ const StudyPlanPage: NextPage = () => {
         // If authentication is successful, mark auth as checked
         setAuthChecked(true);
         
-        // Log the role for debugging
-        console.log("[StudyPlanPage] User authenticated with role:", user.role);
+        // Double check that role is a student, or reject
+        const normalizedRole = user.role.toLowerCase();
+        console.log(`[StudyPlanPage] User authenticated with role: ${user.role} (normalized: ${normalizedRole})`);
+        
+        if (normalizedRole !== 'student') {
+          console.log("[StudyPlanPage] User is not a student, redirecting to dashboard");
+          toast({
+            title: "Access restricted",
+            description: "Study plans are only available to students",
+            variant: "destructive",
+          });
+          router.push('/dashboard');
+          return;
+        }
+        
       } catch (error) {
         console.error("[StudyPlanPage] Error checking authentication:", error);
-        // If there's an error, it's safer to redirect to login
+        
+        // Try again if we haven't reached max attempts
+        if (authCheckAttempts < maxAttempts) {
+          console.log(`[StudyPlanPage] Retrying after error... (${authCheckAttempts}/${maxAttempts})`);
+          setTimeout(checkAuth, 1000); // Wait 1 second before retrying
+          return;
+        }
+        
+        // Max attempts reached, redirect to login
         router.push('/login');
       }
     }

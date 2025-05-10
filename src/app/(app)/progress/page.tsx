@@ -35,8 +35,10 @@ interface EnrolledCourseWithProgress {
 
 export default async function ProgressOverviewPage() {
   const user = await getCurrentUser();
-
-  if (!user || user.role !== 'student') {
+  // Normalize the role for consistent checking
+  const normalizedRole = user?.role?.toLowerCase();
+  if (!user || normalizedRole !== 'student') {
+    console.log(`[ProgressPage] Access denied: user role ${user?.role} (normalized: ${normalizedRole})`);
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] gap-4">
         <Alert variant="destructive" className="max-w-md">
