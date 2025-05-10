@@ -2,22 +2,8 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../../lib/db';
 import type { UserRole } from '../../../../types';
 
-export async function GET(request: Request) {  try {
-    // Enhanced logging for debugging in production
-    const requestOrigin = request.headers.get('origin') || 'unknown origin';
-    const requestMethod = request.method;
-    const requestUrl = request.url;
-    const isAuthCheck = request.headers.get('x-miftah-auth-check') === 'true';
-    
-    console.log(`[auth/me] Request from ${requestOrigin} via ${requestMethod} to ${requestUrl}`);
-    if (isAuthCheck) {
-      console.log('[auth/me] Authentication check request detected');
-    }
-    
-    // Read all request headers for debugging
-    const allHeaders = Array.from(request.headers.entries());
-    console.log(`[auth/me] Request headers: ${JSON.stringify(allHeaders)}`);
-    
+export async function GET(request: Request) {
+  try {
     // Read the request cookies
     const requestCookies = request.headers.get('cookie') || '';
     // Parse cookies manually

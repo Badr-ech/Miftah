@@ -55,23 +55,10 @@ export async function POST(request: Request) {
     };
     
     // Create response with user data
-    const response = NextResponse.json(defaultUser);    // Get deployment URL from env
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || '';
-    let domain = undefined;
+    const response = NextResponse.json(defaultUser);
+      // Set domain based on environment
+    const domain = process.env.NEXT_PUBLIC_APP_DOMAIN || undefined;
     const isProduction = process.env.NODE_ENV === 'production';
-    
-    // Extract domain for production use
-    try {
-      if (appUrl) {
-        domain = new URL(appUrl).hostname;
-        // If domain is an IP address, don't set it
-        if (/^\d+\.\d+\.\d+\.\d+$/.test(domain)) {
-          domain = undefined;
-        }
-      }
-    } catch (e) {
-      console.error('[role-login] Error parsing APP_URL:', e);
-    }
     
     console.log(`[role-login] Setting cookies with domain: ${domain || 'undefined'}, production: ${isProduction}`);
     

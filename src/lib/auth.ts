@@ -12,24 +12,11 @@ export async function getCurrentUser(): Promise<User | null> {
       return clientSideCurrentUser;
     }
     
-    // Check localStorage fallback for deployed environments
-    const isLoggedInViaLocalStorage = localStorage.getItem('miftah_user_loggedin') === 'true';
-    const storedRole = localStorage.getItem('miftah_user_role') as UserRole | null;
-    const loginTimestamp = localStorage.getItem('miftah_login_timestamp');
-    
-    // Create a timestamp 24 hours ago to check if login is still valid
-    const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
-    const isLocalStorageLoginRecent = loginTimestamp && parseInt(loginTimestamp, 10) > twentyFourHoursAgo;
-    
     // Otherwise, fetch the user from the server    
     try {
-      console.log('[auth.ts] Fetching current user from API');
       const response = await fetch('/api/auth/me', {
         credentials: 'include', // Explicitly include credentials (cookies)
-        cache: 'no-store', // Don't cache the response
-        headers: {
-          'x-miftah-auth-check': 'true' // Custom header to help debug auth issues
-        }
+        cache: 'no-store' // Don't cache the response
       });
       
       console.log('[auth.ts] GET /api/auth/me response status:', response.status);
@@ -48,49 +35,9 @@ export async function getCurrentUser(): Promise<User | null> {
           
           clientSideCurrentUserRole = normalizedRole;
           console.log(`[auth.ts] getCurrentUser: User role normalized from ${userData.role} to ${normalizedRole}`);
-          
-          // Update localStorage for redundancy
-          try {
-            localStorage.setItem('miftah_user_loggedin', 'true');
-            localStorage.setItem('miftah_user_role', normalizedRole);
-            localStorage.setItem('miftah_login_timestamp', Date.now().toString());
-          } catch (e) {
-            console.warn('[auth.ts] Failed to update localStorage:', e);
-          }
-          
           return clientSideCurrentUser;
         }
       }
-      
-      // Fallback to localStorage if API call fails but we have recent localStorage data
-      if (!response.ok && isLoggedInViaLocalStorage && isLocalStorageLoginRecent && storedRole) {
-        console.log('[auth.ts] API call failed, using localStorage fallback', { storedRole });
-        
-        // Create a minimal user from localStorage as fallback
-        const fallbackUser: User = {
-          id: 'local-session-' + Date.now().toString(),
-          name: `${storedRole.charAt(0).toUpperCase() + storedRole.slice(1)} User`,
-          email: `local-${storedRole}@example.com`,
-          role: storedRole as UserRole,
-          avatarUrl: undefined  // Changed from null to undefined
-        };
-        
-        clientSideCurrentUser = fallbackUser;
-        clientSideCurrentUserRole = storedRole;
-        return fallbackUser;
-      }
-      
-      // Clear localStorage if API returns unauthorized and no valid local session
-      if (response.status === 401) {
-        try {
-          localStorage.removeItem('miftah_user_loggedin');
-          localStorage.removeItem('miftah_user_role');
-          localStorage.removeItem('miftah_login_timestamp');
-        } catch (e) {
-          console.warn('[auth.ts] Failed to clear localStorage:', e);
-        }
-      }
-      
       return null;
     } catch (error) {
       console.error('[auth.ts] Error fetching current user:', error);
