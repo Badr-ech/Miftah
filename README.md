@@ -35,6 +35,8 @@ Miftah is built using Next.js with TypeScript and leverages a robust tech stack 
 
 ## Getting Started
 
+### Run Locally
+
 To run this project locally:
 
 ```bash
@@ -47,7 +49,39 @@ npm run genkit:dev
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+### Deployed Version
+
+You can also access the deployed version of Miftah at:
+[https://miftah-edu.vercel.app](https://miftah-edu.vercel.app)
+
+## Authentication
+
+Miftah offers two ways to login:
+
+### Quick Login (For Testing)
+
+For quick testing, you can login by simply selecting one of the available roles:
+- Student
+- Teacher
+- Admin
+
+### Credential Login
+
+You can also login using the following credentials:
+
+**Student Access:**
+- Email: alex.thompson@example.com
+- Password: student123
+
+**Teacher Access:**
+- Email: sarah.johnson@example.com
+- Password: teacher123
+
+**Admin Access:**
+- Email: admin@example.com
+- Password: admin123
 
 ## Project Structure
 
