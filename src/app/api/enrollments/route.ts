@@ -3,15 +3,19 @@ import { db } from '../../../lib/db';
 
 export async function GET(request: Request) {
   try {
+    console.log('[API] GET /api/enrollments - Starting request');
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
     if (!userId) {
+      console.log('[API] GET /api/enrollments - Missing userId parameter');
       return NextResponse.json(
         { error: 'User ID is required' },
         { status: 400 }
       );
-    }    // Define type for the enrollment query result
+    }
+    
+    console.log(`[API] GET /api/enrollments - Fetching enrollments for userId: ${userId}`);// Define type for the enrollment query result
     type EnrollmentWithCourse = {
       userId: string;
       courseId: string;
@@ -118,11 +122,15 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(newEnrollment, { status: 201 });
-  } catch (error) {
+    return NextResponse.json(newEnrollment, { status: 201 });  } catch (error) {
     console.error('Error enrolling in course:', error);
+    // More detailed error response
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error', 
+        details: error instanceof Error ? error.message : String(error),
+        type: error?.constructor?.name || 'Unknown'
+      },
       { status: 500 }
     );
   }

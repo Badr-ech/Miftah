@@ -1,25 +1,49 @@
 // A simple script to test MongoDB connection (Node.js script)
 /* eslint-env node */
-const { PrismaClient } = require('./src/generated/prisma');
 require('dotenv').config();
+const { MongoClient } = require('mongodb');
 
-// Create a new instance of PrismaClient
-const prisma = new PrismaClient({
-  errorFormat: 'pretty',
-  log: [
-    { level: 'query', emit: 'event' },
-    { level: 'error', emit: 'stdout' },
-    { level: 'info', emit: 'stdout' },
-    { level: 'warn', emit: 'stdout' },
-  ],
+// MongoDB connection URL from environment variables
+const url = process.env.DATABASE_URL;
+console.log(`Testing MongoDB connection...`);
+console.log(`Using connection URL: ${url.replace(/(mongodb(\+srv)?:\/\/[^:]+:)([^@]+)/, '$1***')}`);
+
+// Create MongoDB client
+const client = new MongoClient(url, {
+  connectTimeoutMS: 10000,
+  serverSelectionTimeoutMS: 10000,
 });
 
-// Add listener for query events (optional, for debugging)
-prisma.$on('query', (e) => {
-  console.log('Query: ' + e.query);
-  console.log('Params: ' + e.params);
-  console.log('Duration: ' + e.duration + 'ms');
-});
+// Main function to test connection
+async function main() {
+  try {
+    await client.connect();
+    console.log('Connected successfully to MongoDB server');
+    
+    // Get the database name from the connection string
+    const dbName = new URL(url).pathname.substring(1) || 'miftah';
+    const db = client.db(dbName);
+    
+    // List collections to verify connectivity
+    const collections = await db.listCollections().toArray();
+    console.log(`Found ${collections.length} collection(s) in database "${dbName}":`);
+    collections.forEach(coll => {
+      console.log(`- ${coll.name}`);
+    });
+    
+    return 'MongoDB connection test completed successfully';
+  } catch (error) {
+    console.error('Error connecting to MongoDB:', error);
+    return 'MongoDB connection test failed';
+  } finally {
+    await client.close();
+  }
+}
+
+// Run the main function
+main()
+  .then(console.log)
+  .catch(console.error);
 
 async function main() {
   console.log('Testing MongoDB connection...');

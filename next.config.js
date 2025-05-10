@@ -6,10 +6,18 @@
  */
 const nextConfig = {
   typescript: {
-    ignoreBuildErrors: true,
+    // Only ignore errors in production, not in development
+    ignoreBuildErrors: process.env.NODE_ENV === 'production',
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    // Only ignore errors in production, not in development
+    ignoreDuringBuilds: process.env.NODE_ENV === 'production',
+  },
+  // Enable more detailed error logging
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
   },
   images: {
     remotePatterns: [

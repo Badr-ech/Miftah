@@ -5,10 +5,14 @@ import { getServerUser } from '../../../lib/server-auth';
 export async function GET(
   request: Request
 ) {
-  try {    const { searchParams } = new URL(request.url);
+  try {
+    console.log('[API] GET /api/courses - Starting request');
+    const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const query = searchParams.get('query');
-    const teacherId = searchParams.get('teacherId');    // Build filter conditions based on parameters
+    const teacherId = searchParams.get('teacherId');
+    
+    console.log(`[API] GET /api/courses - Filters: category=${category || 'none'}, query=${query || 'none'}, teacherId=${teacherId || 'none'}`);// Build filter conditions based on parameters
     const whereCondition: {
       category?: string;
       teacherId?: string;
@@ -84,7 +88,9 @@ export async function GET(
           },
         },
       },
-    }) as CourseWithCounts[];    // Transform the data to include counts
+    }) as CourseWithCounts[];    console.log(`[API] GET /api/courses - Found ${courses.length} courses`);
+    
+    // Transform the data to include counts
     const transformedCourses = courses.map((course: CourseWithCounts) => ({
       id: course.id,
       title: course.title,
@@ -99,11 +105,15 @@ export async function GET(
       updatedAt: course.updatedAt,
     }));
 
-    return NextResponse.json(transformedCourses);
-  } catch (error) {
+    return NextResponse.json(transformedCourses);  } catch (error) {
     console.error('Error fetching courses:', error);
+    // More detailed error response
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error', 
+        details: error instanceof Error ? error.message : String(error),
+        type: error?.constructor?.name || 'Unknown'
+      },
       { status: 500 }
     );
   }
