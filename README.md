@@ -41,6 +41,8 @@ To run this project locally:
 # Install dependencies
 npm install
 
+npm run genkit:dev
+
 # Run the development server
 npm run dev
 ```
