@@ -47,26 +47,18 @@ jobs:
       # Generate Prisma client
       - name: Generate Prisma Client
         run: npx prisma generate
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
       # Run Prisma validation
       - name: Validate Prisma Schema
         run: npx prisma validate
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
       # Push schema to test database (needed before tests)
       - name: Push schema to MongoDB
         run: npx prisma db push --force-reset
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         
       # Run Prisma tests with the test database
       - name: Run Prisma tests
         run: npx prisma validate
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       # Restore Next.js cache if available
       - name: Restore Next.js cache
