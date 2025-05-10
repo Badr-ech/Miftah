@@ -16,7 +16,6 @@ import { BookOpen, ShieldCheck, User, Users, Eye, EyeOff, Mail, Lock } from 'luc
 import Image from 'next/image';
 
 export default function LoginPage() {
-  // Default to quick login since it's the recommended method for the demo
   const [loginMethod, setLoginMethod] = useState<'quick' | 'email'>('quick');
   const [selectedRole, setSelectedRole] = useState<UserRole>('student');
   const [email, setEmail] = useState('');
@@ -65,44 +64,33 @@ export default function LoginPage() {
       
       // Wait briefly to ensure cookies are set
       await new Promise(resolve => setTimeout(resolve, 300));
-        // Redirect to the destination or dashboard by default
+      
+      // Redirect to the destination or dashboard by default
       console.log(`[LoginPage] Redirecting to: ${redirectTo}`);
       router.push(redirectTo);
-      router.refresh(); // Important to re-fetch layout and user data
-    } catch (error) {
-      console.error('[LoginPage] Login error:', error);
-      
+      router.refresh(); // Important to re-fetch layout and user data    } catch (_error) {
       // For demo purposes, let's try the quick login as a fallback
       if (loginMethod === 'email') {
         try {
-          console.log('[LoginPage] Email login failed, attempting fallback login');
           // Fallback to role-based login for the demo
           const fallbackRole = email.includes('admin') ? 'admin' : 
                               email.includes('teacher') ? 'teacher' : 'student';
           await loginWithRole(fallbackRole);
-          console.log(`[LoginPage] Fallback login successful with role: ${fallbackRole}`);
-          
           toast({
             title: 'Demo Login',
             description: `Login successful with demo credentials as ${fallbackRole}.`,
-            variant: 'default',
-          });
-          
-          // Always redirect to the main dashboard regardless of role
+          });          // Always redirect to the main dashboard regardless of role
           router.push('/dashboard');
           router.refresh();
           return;
         } catch (fallbackError) {
-          console.error('[LoginPage] Fallback login also failed:', fallbackError);
+          console.error('Fallback login failed:', fallbackError);
         }
       }
-      
-      // Only show error toast if both regular login and fallback failed
+        // For demo purposes, let's show a more descriptive message
       toast({
         title: 'Login Failed', 
-        description: loginMethod === 'email' ? 
-          'For this demo, please use the Quick Login option instead.' : 
-          'Login failed. Please try again.',
+        description: 'For this demo, please use the Quick Login option instead.',
         variant: 'destructive',
       });
     } finally {
@@ -130,14 +118,10 @@ export default function LoginPage() {
           <CardTitle className="text-3xl font-bold">Welcome to Miftah</CardTitle>
           <CardDescription>Sign in to continue</CardDescription>
         </CardHeader>
-          <Tabs defaultValue="quick" value={loginMethod} onValueChange={(value) => setLoginMethod(value as 'quick' | 'email')}>
+        
+        <Tabs defaultValue="quick" onValueChange={(value) => setLoginMethod(value as 'quick' | 'email')}>
           <TabsList className="grid grid-cols-2 w-[80%] mx-auto mb-4">
-            <TabsTrigger value="quick" className="relative">
-              Quick Login
-              <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[10px] px-1 rounded-full">
-                Recommended
-              </span>
-            </TabsTrigger>
+            <TabsTrigger value="quick">Quick Login</TabsTrigger>
             <TabsTrigger value="email">Email & Password</TabsTrigger>
           </TabsList>
           
@@ -178,13 +162,8 @@ export default function LoginPage() {
                   </Label>
                 </RadioGroup>
               </TabsContent>
-                <TabsContent value="email" className="space-y-4">
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-md mb-4">
-                  <p className="text-amber-700 text-sm">
-                    <strong>Note:</strong> For demonstration purposes, please use the Quick Login option.
-                    Email login requires a valid database user.
-                  </p>
-                </div>
+              
+              <TabsContent value="email" className="space-y-4">
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
@@ -233,18 +212,14 @@ export default function LoginPage() {
                   </div>
                 </div>
               </TabsContent>
-            </CardContent>            <CardFooter>
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={isLoading}
-                variant={loginMethod === 'quick' ? 'default' : 'outline'}
-              >
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading 
                   ? 'Logging in...' 
                   : loginMethod === 'quick'
                     ? `Login as ${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}`
-                    : 'Login with Email'
+                    : 'Login'
                 }
               </Button>
             </CardFooter>
