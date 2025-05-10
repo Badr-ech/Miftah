@@ -30,7 +30,8 @@ export function toObjectId(id: string): string {
 export function isValidObjectId(id: string): boolean {
   try {
     return ObjectId.isValid(id);
-  } catch (error) {
+  } catch {
+    // Silent error handling - just return false if ID is invalid
     return false;
   }
 }

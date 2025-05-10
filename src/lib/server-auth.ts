@@ -1,6 +1,5 @@
 'use server';
 
-// @ts-ignore - Ignoring path alias resolution issue
 import type { User, UserRole } from '../types';
 import { cookies } from 'next/headers';
 import { db } from './db';
@@ -11,13 +10,13 @@ export async function getUserRoleFromCookies(): Promise<UserRole | null> {
     if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build') {
       return null;
     }
-
+    
     // During static build, we need to handle cookies() failing gracefully
     // Get cookie store - cookies() returns a Promise in Next.js
     let cookieStore;
     try {
       cookieStore = await cookies();
-    } catch (cookieError) {
+    } catch {
       // When building statically or during SSG, this function might be called 
       // but cookies() will throw an error - return null in this case
       console.warn('[server-auth] getUserRoleFromCookies: Unable to access cookies (likely during static generation)');
@@ -68,7 +67,7 @@ export async function setUserRoleCookie(role: UserRole): Promise<void> {
     let cookieStore;
     try {
       cookieStore = await cookies();
-    } catch (cookieError) {
+    } catch {
       // When building statically, this function might be called 
       // but cookies() will throw an error - just return in this case
       console.warn('[server-auth] setUserRoleCookie: Unable to access cookies (likely during static generation)');
@@ -103,7 +102,7 @@ export async function getUserIdFromCookies(): Promise<string | null> {
     let cookieStore;
     try {
       cookieStore = await cookies();
-    } catch (cookieError) {
+    } catch {
       // When building statically, this function might be called 
       // but cookies() will throw an error - return null in this case
       console.warn('[server-auth] getUserIdFromCookies: Unable to access cookies (likely during static generation)');
@@ -129,7 +128,7 @@ export async function setUserCookies(userId: string, role: UserRole): Promise<vo
     let cookieStore;
     try {
       cookieStore = await cookies();
-    } catch (cookieError) {
+    } catch {
       // When building statically, this function might be called 
       // but cookies() will throw an error - just return in this case
       console.warn('[server-auth] setUserCookies: Unable to access cookies (likely during static generation)');
@@ -166,8 +165,8 @@ export async function setUserCookies(userId: string, role: UserRole): Promise<vo
 export async function getServerUser(): Promise<User | null> {
   try {
     const userId = await getUserIdFromCookies();
-    
-    if (userId) {      try {
+        if (userId) {
+      try {
         // Import the MongoDB helper for UUID to ObjectId conversion
         const { ensureObjectId } = await import('./mongodb-helpers');
         
@@ -192,7 +191,8 @@ export async function getServerUser(): Promise<User | null> {
         });
         
         if (dbUser) {
-          // User found in database          // Normalize role to lowercase for consistency across environments
+          // User found in database
+          // Normalize role to lowercase for consistency across environments
           const normalizedRole = dbUser.role.toString().toLowerCase();
           
           const user: User = {
@@ -209,34 +209,37 @@ export async function getServerUser(): Promise<User | null> {
       } catch (dbError) {
         console.error('[server-auth] Error fetching user from database:', dbError);
         // Continue to the fallback case below instead of failing
-      }
-        // This block is handled in the try-catch above
+      }    // This block is handled in the try-catch above
     }
-      // If no userId or no user found, fallback to role-based method for backward compatibility
-    const role = await getUserRoleFromCookies();
-    if (role) {      try {
-        // Find a user with the specified role
-        // Cast the role string to match the expected database enum type
+    
+    // If no userId or no user found, fallback to role-based method for backward compatibility    
+    const role = await getUserRoleFromCookies();    
+    if (role) {
+      try {        // Find a user with the specified role
+        // Use the uppercase version of the role which is one of the valid UserRole literals
+        const upperRole = role.toUpperCase() as "ADMIN" | "TEACHER" | "STUDENT";
         const dbUser = await db.user.findFirst({
-          where: { role: role.toUpperCase() as any },
+          where: { 
+            role: upperRole
+          }, // Now we have a correctly typed role value
           select: {
             id: true,
             name: true,
             email: true,
             role: true,
             avatarUrl: true
-          }
-        });
+          }        });
         
         // Log for debugging
         if (!dbUser) {
           console.log(`[server-auth] No user found with role '${role.toUpperCase()}'`);
         }
         
-        if (dbUser) {        // Normalize role to lowercase for consistency
-        const normalizedRole = dbUser.role.toString().toLowerCase();
-        
-        const user: User = {
+        if (dbUser) {
+          // Normalize role to lowercase for consistency
+          const normalizedRole = dbUser.role.toString().toLowerCase();
+          
+          const user: User = {
             id: dbUser.id,
             name: dbUser.name,
             email: dbUser.email,

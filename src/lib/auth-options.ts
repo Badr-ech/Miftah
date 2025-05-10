@@ -3,11 +3,12 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "../lib/db";
 import { compare } from "bcryptjs";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-// Add proper typing for the credentials
+// We're using PrismaAdapter directly instead of Adapter type
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Adapter } from "next-auth/adapters";
 
 export const authOptions: NextAuthOptions = {
-  // @ts-ignore - PrismaAdapter has typing issues with the current version
+  // @ts-expect-error - PrismaAdapter has typing issues with the current version
   adapter: PrismaAdapter(db),
   pages: {
     signIn: "/login",

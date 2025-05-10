@@ -20,11 +20,13 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-  },  // Handle the dynamic server usage errors
+  },  
+  // Handle the dynamic server usage errors
   // Note: Next.js 15 doesn't support 'hybrid' output anymore
   output: 'standalone',
   // Explicitly mark routes that use cookies() as dynamic
-  // This prevents the "Dynamic server usage" errors during build  experimental: {
+  // This prevents the "Dynamic server usage" errors during build  
+  experimental: {
     // Disabled CSS optimization due to issues with critters package
     // optimizeCss: true,
     serverActions: {
@@ -73,7 +75,7 @@ const nextConfig = {
     resolveExtensions: ['.js', '.jsx', '.ts', '.tsx'],
     resolveNodeModules: true,
   },
-    // Fix for require.extensions warning with handlebars
+  // Fix for require.extensions warning with handlebars
   webpack: (config) => {
     // Handle the handlebars require.extensions issue
     config.resolve.fallback = {

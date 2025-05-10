@@ -1,4 +1,5 @@
-// A simple script to test MongoDB connection
+// A simple script to test MongoDB connection (Node.js script)
+/* eslint-env node */
 const { PrismaClient } = require('./src/generated/prisma');
 require('dotenv').config();
 
