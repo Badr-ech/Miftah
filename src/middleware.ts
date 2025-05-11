@@ -70,8 +70,17 @@ export async function middleware(request: NextRequest) {
   const needsAuth = protectedRoutes.some(route => pathname.startsWith(route));
   
   // If the URL path is under protected routes and no authentication cookies exist
-  if (needsAuth && (!userRole?.value && !userId?.value)) {
-    // For the demo, redirect to login page
+  if (needsAuth && (!userRole?.value || !userId?.value)) {
+    // Log the exact state of cookies for debugging
+    console.log(`[Middleware] Auth check failed - userRole: ${userRole?.value || 'missing'}, userId: ${userId?.value || 'missing'} for path ${pathname}`);
+    
+    // Let's examine if we need to be more lenient - if at least one cookie exists, allow access
+    if (userRole?.value || userId?.value) {
+      console.log(`[Middleware] At least one auth cookie exists, allowing access to ${pathname}`);
+      return NextResponse.next();
+    }
+    
+    // If no cookies at all, redirect to login
     console.log(`[Middleware] No auth cookies found for protected path ${pathname}, redirecting to /login`);
     
     // Clone the URL to avoid mutating the original
