@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../components
 
 export default async function AdminModerationPage() {
   let user = await getCurrentUser();
-  const normalizedRole = user?.role?.toLowerCase();
   // Fallback: if no user but cookies exist, create a demo admin
   if (!user && (typeof document !== 'undefined' && (document.cookie.includes('userId=') || document.cookie.includes('userRole=')))) {
     user = {
