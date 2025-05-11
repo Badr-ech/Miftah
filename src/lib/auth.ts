@@ -50,7 +50,16 @@ export async function getCurrentUser(): Promise<User | null> {
           clientSideCurrentUserRole = normalizedRole;
           console.log(`[auth.ts] getCurrentUser: User role normalized from ${userData.role} to ${normalizedRole}`);
           return clientSideCurrentUser;
+        } else if (clientSideCurrentUser) {
+          // If the API returns null but we have a cached user, keep using it
+          // This prevents users from being logged out unexpectedly
+          console.log('[auth.ts] API returned null but using cached user data');
+          return clientSideCurrentUser;
         }
+      } else if (clientSideCurrentUser) {
+        // If the API call fails but we have a cached user, keep using it
+        console.log('[auth.ts] API call failed but using cached user data');
+        return clientSideCurrentUser;
       }
       return null;
     } catch (error) {

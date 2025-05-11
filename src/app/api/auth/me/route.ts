@@ -89,48 +89,12 @@ export async function GET(request: Request) {
     });
       if (!user) {
       // User ID in cookie doesn't match any user in DB
-      // Create response with null data
-      const response = NextResponse.json(null);
+      // Don't clear cookies here - just return null
+      // This prevents users from being logged out unexpectedly
+      console.log(`[auth/me] User not found for ID: ${userId}, but keeping cookies intact`);
       
-      // Get domain setting based on environment
-      const isProduction = process.env.NODE_ENV === 'production';
-      const domain = isProduction 
-        ? (process.env.NEXT_PUBLIC_APP_DOMAIN || undefined) 
-        : undefined;
-      
-      console.log(`[auth/me] Clearing cookies, environment: ${process.env.NODE_ENV}, domain: ${domain || 'default'}`);
-      
-      // Add debug logging about the request host
-      const host = request.headers.get('host') || 'unknown';
-      console.log(`[auth/me] About to clear cookies with domain: ${domain}, host: ${host}`);
-      
-      // Clear cookies with domain setting
-      response.cookies.set({
-        name: 'userId',
-        value: '',
-        path: '/',
-        maxAge: 0, // Expires immediately
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: isProduction,
-        domain: domain,
-      });
-      
-      response.cookies.set({
-        name: 'userRole',
-        value: '',
-        path: '/',
-        maxAge: 0, // Expires immediately
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: isProduction,
-        domain: domain,
-      });
-      
-      // Log all available cookies for debugging
-      console.log(`[auth/me] All cookies after clearing: ${JSON.stringify(Object.keys(cookies_map))}`); 
-      
-      return response;
+      // Just return null without clearing cookies
+      return NextResponse.json(null);
     }
       // Return user data
     const response = NextResponse.json({

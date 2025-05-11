@@ -78,6 +78,7 @@ export async function middleware(request: NextRequest) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('from', pathname); // Store original destination
     
+    // Create a response that redirects without modifying any existing cookies
     return NextResponse.redirect(loginUrl);
   }
   
