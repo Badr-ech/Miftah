@@ -5,13 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui
 import { Input } from '../../../components/ui/input';
 import { Search } from 'lucide-react';
 import { CourseFilters } from '../../../components/course-filters';
+import { PagePropsWithSearchParams } from '../../../types/next-params';
 
-interface CoursesPageProps {
-  searchParams: {
-    query?: string;
-    category?: CourseCategory;
-  };
-}
+type CoursesPageProps = PagePropsWithSearchParams<{
+  query?: string;
+  category?: CourseCategory;
+}>;
 
 export default async function CoursesPage({ searchParams }: CoursesPageProps) {
   const { query, category } = searchParams;

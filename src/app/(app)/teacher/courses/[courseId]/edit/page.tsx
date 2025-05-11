@@ -8,10 +8,11 @@ import { Alert, AlertTitle, AlertDescription } from '../../../../../../component
 import { Input } from '../../../../../../components/ui/input';
 import { Label } from '../../../../../../components/ui/label';
 import { Textarea } from '../../../../../../components/ui/textarea';
+import { PagePropsWithParams } from '../../../../../../types/next-params';
 
-interface EditCoursePageProps {
-  params: { courseId: string };
-}
+type EditCoursePageProps = PagePropsWithParams<{
+  courseId: string;
+}>;
 
 interface DBCourse {
   id: string;

@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db } from '../../../../../../lib/db';
+import { RouteParams } from '../../../../../../types/next-params';
 
-interface RouteParams {
-  params: {
-    courseId: string;
-    assignmentId: string;
-  };
-}
+type AssignmentParams = RouteParams<{
+  courseId: string;
+  assignmentId: string;
+}>;
 
 export async function GET(
   _request: Request, 
-  { params }: RouteParams
+  { params }: AssignmentParams
 ) {
   try {
     const { assignmentId } = params;
@@ -46,7 +45,7 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: RouteParams
+  { params }: AssignmentParams
 ) {
   try {
     const { assignmentId } = params;
@@ -75,7 +74,7 @@ export async function PUT(
 
 export async function DELETE(
   _request: Request,
-  { params }: RouteParams
+  { params }: AssignmentParams
 ) {
   try {
     const { assignmentId } = params;

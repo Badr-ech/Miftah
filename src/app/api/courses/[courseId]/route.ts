@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
 import { db } from '../../../../lib/db';
+import { RouteParams } from '../../../../types/next-params';
 
-interface RouteParams {
-  params: {
-    courseId: string;
-  };
-}
+type CourseIdParams = RouteParams<{
+  courseId: string;
+}>;
 
 export async function GET(
   _request: Request, 
-  { params }: RouteParams
+  { params }: CourseIdParams
 ) {
   try {
     const paramsObj = await params;

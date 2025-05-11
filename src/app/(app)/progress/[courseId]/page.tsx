@@ -11,10 +11,11 @@ import { AlertCircle, CheckCircle, FileText, ListChecks, BookOpen } from 'lucide
 import Link from 'next/link';
 import { Button } from '../../../../components/ui/button';
 import Image from 'next/image';
+import { PagePropsWithParams } from '../../../../types/next-params';
 
-interface CourseProgressPageProps {
-  params: { courseId: string };
-}
+type CourseProgressPageProps = PagePropsWithParams<{
+  courseId: string;
+}>;
 
 export default async function CourseProgressPage({ params }: CourseProgressPageProps) {
   const paramsObj = await params;

@@ -10,10 +10,11 @@ import { FileText, Video, Link as LinkIcon, ListChecks, Edit3, CheckCircle, Aler
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../components/ui/avatar';
 import { Badge } from '../../../../components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from "../../../../components/ui/alert";
+import { PagePropsWithParams } from '../../../../types/next-params';
 
-interface CourseDetailPageProps {
-  params: { courseId: string };
-}
+type CourseDetailPageProps = PagePropsWithParams<{
+  courseId: string;
+}>;
 
 // Extended types for database responses
 interface DBCourseMaterial {

@@ -9,13 +9,12 @@ import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from "../../../../../../components/ui/alert";
 import { AlertCircle, CalendarDays, CheckSquare, Edit, FileText, Info } from 'lucide-react';
 import { Badge } from '../../../../../../components/ui/badge';
+import { PagePropsWithParams } from '../../../../../../types/next-params';
 
-interface AssignmentDetailPageProps {
-  params: {
-    courseId: string;
-    assignmentId: string;
-  };
-}
+type AssignmentDetailPageProps = PagePropsWithParams<{
+  courseId: string;
+  assignmentId: string;
+}>;
 
 export default async function AssignmentDetailPage({ params }: AssignmentDetailPageProps) {
   const { courseId, assignmentId } = params;
