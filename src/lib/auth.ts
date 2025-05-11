@@ -5,6 +5,14 @@ import type { User, UserRole } from '../types';
 let clientSideCurrentUserRole: UserRole = 'student'; 
 let clientSideCurrentUser: User | null = null;
 
+// Debug function to inspect cookies
+function debugCookies(context: string) {
+  if (typeof document !== 'undefined') {
+    const cookies = document.cookie.split(';').map(c => c.trim());
+    console.log(`[auth.ts] ${context} - Current cookies:`, cookies.join(', '));
+  }
+}
+
 export async function getCurrentUser(): Promise<User | null> {
   if (typeof window !== 'undefined') { // Client-side
     // If we already have a user cached in memory, return it
@@ -14,12 +22,18 @@ export async function getCurrentUser(): Promise<User | null> {
     
     // Otherwise, fetch the user from the server    
     try {
+      // Log cookies before making the request
+      debugCookies('Before getCurrentUser fetch');
+      
       const response = await fetch('/api/auth/me', {
         credentials: 'include', // Explicitly include credentials (cookies)
         cache: 'no-store' // Don't cache the response
       });
       
       console.log('[auth.ts] GET /api/auth/me response status:', response.status);
+      
+      // Log cookies after receiving the response
+      debugCookies('After getCurrentUser fetch');
       if (response.ok) {
         const userData = await response.json();
         console.log('[auth.ts] GET /api/auth/me response data:', userData ? 'received data' : 'null');
@@ -92,6 +106,9 @@ export async function loginWithRole(role: UserRole): Promise<User> {
     
     console.log(`[auth.ts] loginWithRole: Normalized role from ${role} to ${normalizedRole}`);
     
+    // Check cookies before login attempt
+    debugCookies('Before role-based login');
+    
     // Directly set the role cookie without trying to find a specific user
     // This simplified approach bypasses the need for specific user credentials
     const response = await fetch('/api/auth/role-login', {
@@ -108,6 +125,9 @@ export async function loginWithRole(role: UserRole): Promise<User> {
     }
 
     const userData = await response.json();
+    
+    // Check cookies after successful response
+    debugCookies('After role-based login');
     
     // Update client-side cache with normalized role
     clientSideCurrentUser = {
@@ -131,6 +151,9 @@ export async function login(email: string, password: string): Promise<User> {
   try {
     console.log(`[auth.ts] Attempting email login for: ${email}`);
     
+    // Check cookies before login attempt
+    debugCookies('Before login attempt');
+    
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
@@ -152,8 +175,7 @@ export async function login(email: string, password: string): Promise<User> {
     console.log(`[auth.ts] Login successful for user: ${userData.email}`);
     
     // Check if cookies were properly set after login
-    const cookies = document.cookie.split(';').map(c => c.trim());
-    console.log(`[auth.ts] Cookies after login: ${cookies.join(', ')}`);
+    debugCookies('After successful login');
     
     
     // Normalize the role for consistency

@@ -48,8 +48,14 @@ export async function middleware(request: NextRequest) {
   const userRole = request.cookies.get('userRole');
   const userId = request.cookies.get('userId');
   
-  // Log for debugging
-  console.log(`[Middleware] Path: ${pathname}, UserRole: ${userRole?.value}, UserId: ${userId?.value}`);
+  // Enhanced logging for debugging
+  const host = request.headers.get('host') || 'unknown-host';
+  console.log(`[Middleware] Path: ${pathname}, Host: ${host}, UserRole: ${userRole?.value || 'undefined'}, UserId: ${userId?.value || 'undefined'}`);
+  console.log(`[Middleware] NODE_ENV: ${process.env.NODE_ENV}, NEXT_PUBLIC_APP_DOMAIN: ${process.env.NEXT_PUBLIC_APP_DOMAIN || 'not set'}`);
+  
+  // Log all cookies for debugging
+  const cookieHeader = request.headers.get('cookie') || '';
+  console.log(`[Middleware] Raw cookies: ${cookieHeader}`);
   
   // Special handling for routes that need auth
   const protectedRoutes = [
@@ -89,8 +95,12 @@ export async function middleware(request: NextRequest) {
     response.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*');
     response.headers.set('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
     
+    // Try both with and without the "www" prefix for better compatibility
+    const domainWithoutWww = domain?.replace(/^www\./, '') || undefined;
+    
     // If we have cookies, update them to ensure they're properly set
     if (userId?.value) {
+      console.log(`[Middleware] Re-setting userId cookie with domain: ${domain}`);
       response.cookies.set({
         name: 'userId',
         value: userId.value,
@@ -98,11 +108,12 @@ export async function middleware(request: NextRequest) {
         sameSite: 'lax',
         secure: true,
         httpOnly: true,
-        domain: domain
+        domain: domainWithoutWww // Use domain without www prefix
       });
     }
     
     if (userRole?.value) {
+      console.log(`[Middleware] Re-setting userRole cookie with domain: ${domain}`);
       response.cookies.set({
         name: 'userRole',
         value: userRole.value,
@@ -110,7 +121,7 @@ export async function middleware(request: NextRequest) {
         sameSite: 'lax',
         secure: true,
         httpOnly: true,
-        domain: domain
+        domain: domainWithoutWww // Use domain without www prefix
       });
     }
   }

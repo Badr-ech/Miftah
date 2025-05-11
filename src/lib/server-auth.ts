@@ -135,13 +135,20 @@ export async function setUserCookies(userId: string, role: UserRole): Promise<vo
       return;
     }
     
+    // Get domain setting based on environment
+    const isProduction = process.env.NODE_ENV === 'production';
+    const domain = isProduction ? process.env.NEXT_PUBLIC_APP_DOMAIN : undefined;
+    
+    console.log(`[server-auth] Setting cookies with domain: ${domain || 'default'}, env: ${process.env.NODE_ENV}`);
+    
     // Set user ID cookie
     cookieStore.set('userId', userId, { 
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       httpOnly: true, 
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production', 
+      secure: isProduction,
+      domain: domain,
     });
     
     // Set user role cookie
@@ -150,7 +157,8 @@ export async function setUserCookies(userId: string, role: UserRole): Promise<vo
       maxAge: 60 * 60 * 24 * 7, // 7 days
       httpOnly: true, 
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: isProduction,
+      domain: domain,
     });
     
     // Don't log in production to avoid excessive logs

@@ -100,6 +100,10 @@ export async function GET(request: Request) {
       
       console.log(`[auth/me] Clearing cookies, environment: ${process.env.NODE_ENV}, domain: ${domain || 'default'}`);
       
+      // Add debug logging about the request host
+      const host = request.headers.get('host') || 'unknown';
+      console.log(`[auth/me] About to clear cookies with domain: ${domain}, host: ${host}`);
+      
       // Clear cookies with domain setting
       response.cookies.set({
         name: 'userId',
@@ -122,6 +126,9 @@ export async function GET(request: Request) {
         secure: isProduction,
         domain: domain,
       });
+      
+      // Log all available cookies for debugging
+      console.log(`[auth/me] All cookies after clearing: ${JSON.stringify(Object.keys(cookies_map))}`); 
       
       return response;
     }
