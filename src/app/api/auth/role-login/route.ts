@@ -57,10 +57,12 @@ export async function POST(request: Request) {
     // Create response with user data
     const response = NextResponse.json(defaultUser);
       // Set domain based on environment
-    const domain = process.env.NEXT_PUBLIC_APP_DOMAIN || undefined;
     const isProduction = process.env.NODE_ENV === 'production';
-    
-    console.log(`[role-login] Setting cookies with domain: ${domain || 'undefined'}, production: ${isProduction}`);
+    const domain = isProduction 
+      ? (process.env.NEXT_PUBLIC_APP_DOMAIN || undefined)
+      : undefined;
+
+    console.log(`[role-login] Setting cookies for environment: ${process.env.NODE_ENV}, domain: ${domain || 'default'}`);
     
     // Set cookies for authentication with improved settings for cross-environment compatibility
     response.cookies.set({
