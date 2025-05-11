@@ -69,35 +69,33 @@ export async function POST(request: Request) {
       role: user.role.toLowerCase(),
       avatarUrl: user.avatarUrl
     });
-      // Set domain based on environment
+      // Get environment setting
     const isProduction = process.env.NODE_ENV === 'production';
-    const domain = isProduction 
-      ? (process.env.NEXT_PUBLIC_APP_DOMAIN || undefined)
-      : undefined;
-
-    console.log(`[role-login] Setting cookies for environment: ${process.env.NODE_ENV}, domain: ${domain || 'default'}`);
     
-    // Set cookies for authentication with improved settings for cross-environment compatibility
-    response.cookies.set({
-      name: 'userId',
-      value: user.id,
+    // Create cookie options without domain
+    const cookieOptions = {
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       httpOnly: true,
-      sameSite: 'lax',     // Use 'lax' for better cross-site compatibility
-      secure: isProduction, // Only secure in production
-      domain: domain,       // Set domain if in production
+      sameSite: 'lax' as const,
+      secure: isProduction,
+    };
+
+    // Add debug logging
+    console.log(`[role-login] Setting cookies for environment: ${process.env.NODE_ENV}`);
+    console.log(`[role-login] App URL config: ${process.env.NEXT_PUBLIC_APP_URL || 'not set'}`);
+    
+    // Set cookies without domain to use current domain automatically
+    response.cookies.set({
+      name: 'userId',
+      value: user.id,
+      ...cookieOptions
     });
     
     response.cookies.set({
       name: 'userRole',
       value: normalizedRole,
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      httpOnly: true,
-      sameSite: 'lax',     // Use 'lax' for better cross-site compatibility
-      secure: isProduction, // Only secure in production
-      domain: domain,       // Set domain if in production
+      ...cookieOptions
     });
       
       return response;

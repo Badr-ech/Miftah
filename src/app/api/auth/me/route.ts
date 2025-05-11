@@ -19,7 +19,14 @@ export async function GET(request: Request) {
     
     // Get hostname from request for domain debugging
     const host = request.headers.get('host') || 'unknown-host';
-    console.log(`[auth/me] Request hostname: ${host}, NODE_ENV: ${process.env.NODE_ENV}`);
+    const origin = request.headers.get('origin') || 'unknown-origin';
+    console.log(`[auth/me] Request hostname: ${host}, origin: ${origin}, NODE_ENV: ${process.env.NODE_ENV}`);
+    console.log(`[auth/me] App domain config: ${process.env.NEXT_PUBLIC_APP_DOMAIN || 'not set'}`);
+    console.log(`[auth/me] App URL config: ${process.env.NEXT_PUBLIC_APP_URL || 'not set'}`);
+    
+    // Check specific cookies
+    console.log(`[auth/me] userId cookie: ${cookies_map['userId'] || 'not found'}`);
+    console.log(`[auth/me] userRole cookie: ${cookies_map['userRole'] || 'not found'}`);
     
     const userId = cookies_map['userId'];
     

@@ -100,33 +100,31 @@ export async function POST(request: Request) {
       
             // After creating response but before setting cookies
       const isProduction = process.env.NODE_ENV === 'production';
-      const domain = isProduction 
-        ? (process.env.NEXT_PUBLIC_APP_DOMAIN || undefined) 
-        : undefined;
       
-      console.log(`[auth/login] Setting cookies for: ${email}, environment: ${process.env.NODE_ENV}, domain: ${domain || 'default'}`);
-      
-      // Then update both cookie sets to include domain
-      response.cookies.set({
-        name: 'userId',
-        value: user.id,
+      // Create cookie options
+      const cookieOptions = {
         path: '/',
         maxAge: 60 * 60 * 24 * 7, // 7 days
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'lax' as const,
         secure: isProduction,
-        domain: domain,  // Add this
+      };
+      
+      // Add debug logging
+      console.log(`[auth/login] Setting cookies for: ${email}, environment: ${process.env.NODE_ENV}`);
+      console.log(`[auth/login] App URL config: ${process.env.NEXT_PUBLIC_APP_URL || 'not set'}`);
+      
+      // Set cookies without domain to use current domain automatically
+      response.cookies.set({
+        name: 'userId',
+        value: user.id,
+        ...cookieOptions
       });
       
       response.cookies.set({
         name: 'userRole',
         value: user.role.toLowerCase(),
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: isProduction,
-        domain: domain,  // Add this
+        ...cookieOptions
       });
       
       return response;
