@@ -5,11 +5,6 @@ import type { UserRole } from '../../../../types';
 // Import ObjectId from bson to generate MongoDB compatible IDs
 const { ObjectId } = await import('bson');
 
-// Generate a MongoDB ObjectId instead of UUID
-function generateObjectId() {
-  return new ObjectId().toHexString();
-}
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();
