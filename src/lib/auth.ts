@@ -185,7 +185,8 @@ export async function login(email: string, password: string): Promise<User> {
       try {
         const errorData = await response.json();
         errorMessage = errorData.error || errorMessage;
-      } catch (e) {
+      } catch {
+        // If JSON parsing fails, try to get the error as text
         errorMessage = await response.text() || errorMessage;
       }
       console.log(`[auth.ts] Login error: ${errorMessage}`);
