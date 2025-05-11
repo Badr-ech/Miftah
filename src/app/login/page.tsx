@@ -79,7 +79,7 @@ export default function LoginPage() {
       
       // This code is unreachable as both branches above have returns or timeouts
     } 
-    catch (_error) {
+    catch {
       // For demo purposes, let's try the quick login as a fallback
       if (loginMethod === 'email') {
         try {
