@@ -82,6 +82,8 @@ export async function middleware(request: NextRequest) {
   if (process.env.NODE_ENV === 'production') {
     const domain = process.env.NEXT_PUBLIC_APP_DOMAIN || undefined;
     
+    console.log(`[Middleware] Production environment detected, using domain: ${domain || 'default'}`);
+    
     // Modify headers to help with CORS and cookie issues
     response.headers.set('Access-Control-Allow-Credentials', 'true');
     response.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*');
@@ -95,6 +97,7 @@ export async function middleware(request: NextRequest) {
         path: '/',
         sameSite: 'lax',
         secure: true,
+        httpOnly: true,
         domain: domain
       });
     }
@@ -106,6 +109,7 @@ export async function middleware(request: NextRequest) {
         path: '/',
         sameSite: 'lax',
         secure: true,
+        httpOnly: true,
         domain: domain
       });
     }

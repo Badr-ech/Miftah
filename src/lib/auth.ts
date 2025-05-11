@@ -129,6 +129,8 @@ export async function loginWithRole(role: UserRole): Promise<User> {
 // Main login function with email/password
 export async function login(email: string, password: string): Promise<User> {
   try {
+    console.log(`[auth.ts] Attempting email login for: ${email}`);
+    
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
@@ -138,12 +140,21 @@ export async function login(email: string, password: string): Promise<User> {
       credentials: 'include', // Explicitly include credentials (cookies)
     });
 
+    console.log(`[auth.ts] Login response status: ${response.status}`);
+    
     if (!response.ok) {
       const errorData = await response.json();
+      console.log(`[auth.ts] Login error: ${errorData.error || 'Unknown error'}`);
       throw new Error(errorData.error || 'Login failed');
     }
 
     const userData = await response.json();
+    console.log(`[auth.ts] Login successful for user: ${userData.email}`);
+    
+    // Check if cookies were properly set after login
+    const cookies = document.cookie.split(';').map(c => c.trim());
+    console.log(`[auth.ts] Cookies after login: ${cookies.join(', ')}`);
+    
     
     // Normalize the role for consistency
     const normalizedRole = normalizeRole(userData.role);

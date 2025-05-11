@@ -16,7 +16,7 @@
   ],
   "build": {
     "env": {
-      "NEXT_PUBLIC_APP_DOMAIN": "miftah-edu.vercel.app"
+      "NEXT_PUBLIC_APP_DOMAIN": "miftah-eight.vercel.app"
     }
   },
   "headers": [
@@ -29,7 +29,7 @@
         },
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://miftah-edu.vercel.app"
+          "value": "https://miftah-eight.vercel.app"
         },
         {
           "key": "Access-Control-Allow-Methods",

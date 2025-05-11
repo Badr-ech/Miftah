@@ -43,12 +43,18 @@ export default function LoginPage() {
         console.log(`[LoginPage] Attempting quick login with role: ${selectedRole}`);
         const user = await loginWithRole(selectedRole);
         console.log(`[LoginPage] Quick login successful, user: ${user.name}, role: ${user.role}`);
+        console.log(`[LoginPage] Redirecting to: ${redirectTo}`);
         
         toast({
           title: 'Quick Login Successful',
           description: `You are now logged in as a ${selectedRole}.`,
           variant: 'default',
         });
+        
+        // Add a small delay before redirecting to ensure toast shows and cookies are set
+        setTimeout(() => {
+          router.push(redirectTo);
+        }, 500);
       } else {
         // Use the email/password login
         console.log(`[LoginPage] Attempting email login for: ${email}`);
@@ -60,15 +66,20 @@ export default function LoginPage() {
           description: `You are now logged in.`,
           variant: 'default',
         });
+        
+        // Add a small delay before redirecting to ensure toast shows and cookies are set
+        setTimeout(() => {
+          console.log(`[LoginPage] Redirecting to: ${redirectTo}`);
+          router.push(redirectTo);
+          router.refresh(); // Important to re-fetch layout and user data
+        }, 500);
+        
+        return; // Skip the additional redirect below
       }
       
-      // Wait briefly to ensure cookies are set
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Redirect to the destination or dashboard by default
-      console.log(`[LoginPage] Redirecting to: ${redirectTo}`);
-      router.push(redirectTo);
-      router.refresh(); // Important to re-fetch layout and user data    } catch (_error) {
+      // This code is unreachable as both branches above have returns or timeouts
+    } 
+    catch (_error) {
       // For demo purposes, let's try the quick login as a fallback
       if (loginMethod === 'email') {
         try {

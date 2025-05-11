@@ -17,6 +17,10 @@ export async function GET(request: Request) {
     // Log for debugging
     console.log(`[auth/me] Available cookies: ${JSON.stringify(Object.keys(cookies_map))}`);
     
+    // Get hostname from request for domain debugging
+    const host = request.headers.get('host') || 'unknown-host';
+    console.log(`[auth/me] Request hostname: ${host}, NODE_ENV: ${process.env.NODE_ENV}`);
+    
     const userId = cookies_map['userId'];
     
     if (!userId) {
@@ -88,12 +92,24 @@ export async function GET(request: Request) {
       // Create response with null data
       const response = NextResponse.json(null);
       
-      // Clear cookies
+      // Get domain setting based on environment
+      const isProduction = process.env.NODE_ENV === 'production';
+      const domain = isProduction 
+        ? (process.env.NEXT_PUBLIC_APP_DOMAIN || undefined) 
+        : undefined;
+      
+      console.log(`[auth/me] Clearing cookies, environment: ${process.env.NODE_ENV}, domain: ${domain || 'default'}`);
+      
+      // Clear cookies with domain setting
       response.cookies.set({
         name: 'userId',
         value: '',
         path: '/',
         maxAge: 0, // Expires immediately
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isProduction,
+        domain: domain,
       });
       
       response.cookies.set({
@@ -101,6 +117,10 @@ export async function GET(request: Request) {
         value: '',
         path: '/',
         maxAge: 0, // Expires immediately
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isProduction,
+        domain: domain,
       });
       
       return response;
