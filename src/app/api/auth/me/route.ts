@@ -6,19 +6,16 @@ export async function GET(request: Request) {
   try {
     // Read the request cookies
     const requestCookies = request.headers.get('cookie') || '';
-    // Improved cookie parsing to handle URL-encoded values and domain prefixes
+    // Parse cookies manually
     const cookies_map = Object.fromEntries(
       requestCookies.split(';').map(cookie => {
-        const parts = cookie.trim().split('=');
-        const name = parts.shift()?.trim();
-        const value = parts.join('='); // Rejoin in case value contains =
-        return [name, decodeURIComponent(value || '')];
-      }).filter(([name]) => name) // Filter out invalid entries
+        const [name, value] = cookie.trim().split('=');
+        return [name, value];
+      })
     );
     
-    // Enhanced logging for debugging
+    // Log for debugging
     console.log(`[auth/me] Available cookies: ${JSON.stringify(Object.keys(cookies_map))}`);
-    console.log(`[auth/me] Cookie values: userId=${cookies_map['userId'] || 'not found'}, userRole=${cookies_map['userRole'] || 'not found'}`);
     
     // Get hostname from request for domain debugging
     const host = request.headers.get('host') || 'unknown-host';
@@ -101,13 +98,11 @@ export async function GET(request: Request) {
         ? (process.env.NEXT_PUBLIC_APP_DOMAIN || undefined) 
         : undefined;
       
-      // Remove www prefix if present for better cookie compatibility
-      const domainWithoutWww = domain?.replace(/^www\./, '') || undefined;
+      console.log(`[auth/me] Clearing cookies, environment: ${process.env.NODE_ENV}, domain: ${domain || 'default'}`);
       
       // Add debug logging about the request host
       const host = request.headers.get('host') || 'unknown';
-      console.log(`[auth/me] Host: ${host}, Environment: ${process.env.NODE_ENV}, Using domain: ${domainWithoutWww || 'default'}`);
-      console.log(`[auth/me] About to clear cookies userId and userRole cookies`);
+      console.log(`[auth/me] About to clear cookies with domain: ${domain}, host: ${host}`);
       
       // Clear cookies with domain setting
       response.cookies.set({
@@ -118,7 +113,7 @@ export async function GET(request: Request) {
         httpOnly: true,
         sameSite: 'lax',
         secure: isProduction,
-        domain: domainWithoutWww,
+        domain: domain,
       });
       
       response.cookies.set({
@@ -129,7 +124,7 @@ export async function GET(request: Request) {
         httpOnly: true,
         sameSite: 'lax',
         secure: isProduction,
-        domain: domainWithoutWww,
+        domain: domain,
       });
       
       // Log all available cookies for debugging
@@ -138,8 +133,6 @@ export async function GET(request: Request) {
       return response;
     }
       // Return user data
-    console.log(`[auth/me] Successfully found user: ${user.email}, id: ${user.id}, role: ${user.role.toLowerCase()}`);
-    
     const response = NextResponse.json({
       id: user.id,
       name: user.name,
@@ -147,11 +140,6 @@ export async function GET(request: Request) {
       role: user.role.toLowerCase() as UserRole,
       avatarUrl: user.avatarUrl
     });
-    
-    // Log the response status for debugging
-    console.log(`[auth/me] Response status: ${response.status}, found user with role: ${user.role.toLowerCase()}`);
-    
-    
     
     return response;
   } catch (error) {

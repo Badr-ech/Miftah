@@ -18,13 +18,9 @@ export default function LogoutPage() {
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
       });
-      
-      // Small delay to ensure toast is shown
-      setTimeout(() => {
-        // Force hard navigation instead of using Next.js router
-        // This ensures cookies are properly cleared across the site
-        window.location.href = '/login';
-      }, 800);
+      // Redirect to login page or home page
+      router.push('/login');
+      router.refresh(); // Force a refresh to ensure state is cleared
     };
 
     handleLogout();

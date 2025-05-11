@@ -61,14 +61,8 @@ export async function POST(request: Request) {
     const domain = isProduction 
       ? (process.env.NEXT_PUBLIC_APP_DOMAIN || undefined)
       : undefined;
-      
-    // Remove www prefix if present for better cookie compatibility
-    const domainWithoutWww = domain?.replace(/^www\./, '') || undefined;
 
-    // Log the host for debugging
-    const host = request.headers.get('host') || 'unknown-host';
-    console.log(`[role-login] Host: ${host}, Environment: ${process.env.NODE_ENV}, Using domain: ${domainWithoutWww || 'default'}`);
-    console.log(`[role-login] Setting cookies with userId: ${defaultUser.id}, userRole: ${normalizedRole}`);
+    console.log(`[role-login] Setting cookies for environment: ${process.env.NODE_ENV}, domain: ${domain || 'default'}`);
     
     // Set cookies for authentication with improved settings for cross-environment compatibility
     response.cookies.set({
@@ -79,7 +73,7 @@ export async function POST(request: Request) {
       httpOnly: true,
       sameSite: 'lax',     // Use 'lax' for better cross-site compatibility
       secure: isProduction, // Only secure in production
-      domain: domainWithoutWww,  // Use domain without www prefix
+      domain: domain,       // Set domain if in production
     });
     
     response.cookies.set({
@@ -90,7 +84,7 @@ export async function POST(request: Request) {
       httpOnly: true,
       sameSite: 'lax',     // Use 'lax' for better cross-site compatibility
       secure: isProduction, // Only secure in production
-      domain: domainWithoutWww,  // Use domain without www prefix
+      domain: domain,       // Set domain if in production
     });
       
       return response;

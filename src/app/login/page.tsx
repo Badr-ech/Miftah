@@ -51,13 +51,10 @@ export default function LoginPage() {
           variant: 'default',
         });
         
-        // Add a longer delay before redirecting to ensure toast shows and cookies are properly set
-        console.log(`[LoginPage] Will redirect to: ${redirectTo} after delay`);
+        // Add a small delay before redirecting to ensure toast shows and cookies are set
         setTimeout(() => {
-          console.log(`[LoginPage] Now redirecting to: ${redirectTo}`);
-          // Force a hard navigation to ensure cookies are applied
-          window.location.href = redirectTo;
-        }, 800);
+          router.push(redirectTo);
+        }, 500);
       } else {
         // Use the email/password login
         console.log(`[LoginPage] Attempting email login for: ${email}`);
@@ -72,10 +69,10 @@ export default function LoginPage() {
         
         // Add a small delay before redirecting to ensure toast shows and cookies are set
         setTimeout(() => {
-          console.log(`[LoginPage] Now redirecting to: ${redirectTo}`);
-          // Force a hard navigation instead of client-side routing to ensure cookies are properly applied
-          window.location.href = redirectTo;
-        }, 800);
+          console.log(`[LoginPage] Redirecting to: ${redirectTo}`);
+          router.push(redirectTo);
+          router.refresh(); // Important to re-fetch layout and user data
+        }, 500);
         
         return; // Skip the additional redirect below
       }

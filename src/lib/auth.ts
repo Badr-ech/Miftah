@@ -6,24 +6,10 @@ let clientSideCurrentUserRole: UserRole = 'student';
 let clientSideCurrentUser: User | null = null;
 
 // Debug function to inspect cookies
-export function debugCookies(context: string) {
+function debugCookies(context: string) {
   if (typeof document !== 'undefined') {
-    const allCookies = document.cookie;
-    const cookies = allCookies.split(';').map(c => c.trim());
+    const cookies = document.cookie.split(';').map(c => c.trim());
     console.log(`[auth.ts] ${context} - Current cookies:`, cookies.join(', '));
-    
-    // Parse cookies for better visibility
-    const cookieMap: Record<string, string> = {};
-    cookies.forEach(cookie => {
-      const parts = cookie.trim().split('=');
-      const name = parts.shift()?.trim();
-      const value = parts.join('='); // Rejoin in case value contains =
-      if (name) cookieMap[name] = decodeURIComponent(value || '');
-    });
-    
-    console.log('[auth.ts] Parsed cookies:', cookieMap);
-    console.log(`[auth.ts] userId: ${cookieMap['userId'] || 'not found'}`);
-    console.log(`[auth.ts] userRole: ${cookieMap['userRole'] || 'not found'}`);
   }
 }
 
@@ -175,22 +161,14 @@ export async function login(email: string, password: string): Promise<User> {
       },
       body: JSON.stringify({ email, password }),
       credentials: 'include', // Explicitly include credentials (cookies)
-      cache: 'no-store' // Add this to avoid cached responses
     });
 
     console.log(`[auth.ts] Login response status: ${response.status}`);
     
     if (!response.ok) {
-      let errorMessage = 'Login failed';
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.error || errorMessage;
-      } catch {
-        // If JSON parsing fails, try to get the error as text
-        errorMessage = await response.text() || errorMessage;
-      }
-      console.log(`[auth.ts] Login error: ${errorMessage}`);
-      throw new Error(errorMessage);
+      const errorData = await response.json();
+      console.log(`[auth.ts] Login error: ${errorData.error || 'Unknown error'}`);
+      throw new Error(errorData.error || 'Login failed');
     }
 
     const userData = await response.json();
@@ -198,14 +176,6 @@ export async function login(email: string, password: string): Promise<User> {
     
     // Check if cookies were properly set after login
     debugCookies('After successful login');
-    
-    // Force refresh after login to ensure new cookies are used
-    console.log('[auth.ts] Scheduling page reload to ensure cookie updates are applied');
-    setTimeout(() => {
-      if (typeof window !== 'undefined') {
-        window.location.reload();
-      }
-    }, 300);
     
     
     // Normalize the role for consistency
@@ -232,17 +202,10 @@ export async function login(email: string, password: string): Promise<User> {
 
 export async function logout(): Promise<void> {
   try {
-    // Log cookies before logout attempt
-    debugCookies('Before logout attempt');
-    
     const response = await fetch('/api/auth/logout', {
       method: 'POST',
       credentials: 'include', // Include credentials to ensure cookies are sent
-      cache: 'no-store', // Don't cache the logout response
     });
-    
-    // Log cookies after logout request
-    debugCookies('After logout request');
     
     if (!response.ok) {
       const errorData = await response.json();
@@ -260,12 +223,8 @@ export async function logout(): Promise<void> {
       localStorage.removeItem('currentUserRole');
       
       // Attempt to clear cookies manually as a backup
-      document.cookie = 'userId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax;';
-      document.cookie = 'userRole=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax;';
-      
-      // Try again with Secure flag for HTTPS
-      document.cookie = 'userId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax; Secure;';
-      document.cookie = 'userRole=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax; Secure;';
+      document.cookie = 'userId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      document.cookie = 'userRole=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
       
       // If we know the domain, also clear domain-specific cookies
       const domain = window.location.hostname;
