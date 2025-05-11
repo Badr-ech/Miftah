@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../../lib/db';
 import type { UserRole } from '../../../../types';
 
+// Import ObjectId from bson to generate MongoDB compatible IDs
+const { ObjectId } = await import('bson');
+
+// Generate a MongoDB ObjectId instead of UUID
+function generateObjectId() {
+  return new ObjectId().toHexString();
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -15,47 +23,57 @@ export async function POST(request: Request) {
     }    // For demo purposes, we'll skip DB lookup and just create a default user
     // This ensures the quick login always works
     
-    // Import ObjectId from bson to generate MongoDB compatible IDs
-    const { ObjectId } = await import('bson');
-    
-    // Generate a MongoDB ObjectId instead of UUID
-    function generateObjectId() {
-      return new ObjectId().toHexString();
-    }
-      
     // Normalize role for consistency
     // First handle any possible case variations
-    let normalizedRole;
-    
+    let normalizedRole: UserRole;
+    let normalizedRoleUpper: UserRole;
     if (typeof role === 'string') {
       const lowerRole = role.toLowerCase();
-      if (['student', 'teacher', 'admin'].includes(lowerRole)) {
-        normalizedRole = lowerRole;
-      } else {
-        // Try to handle uppercase formats or other variants
-        const upperRole = role.toUpperCase();
-        if (upperRole === 'STUDENT') normalizedRole = 'student';
-        else if (upperRole === 'TEACHER') normalizedRole = 'teacher';
-        else if (upperRole === 'ADMIN') normalizedRole = 'admin';
-        else normalizedRole = 'student'; // Default to student if unrecognized
-      }
+      if (lowerRole === 'student') { normalizedRole = 'student'; normalizedRoleUpper = 'STUDENT'; }
+      else if (lowerRole === 'teacher') { normalizedRole = 'teacher'; normalizedRoleUpper = 'TEACHER'; }
+      else if (lowerRole === 'admin') { normalizedRole = 'admin'; normalizedRoleUpper = 'ADMIN'; }
+      else { normalizedRole = 'student'; normalizedRoleUpper = 'STUDENT'; }
     } else {
-      // If role is somehow not a string, default to student
       normalizedRole = 'student';
+      normalizedRoleUpper = 'STUDENT';
     }
     
     console.log(`[role-login] Normalized role from '${role}' to '${normalizedRole}'`);
     
-    const defaultUser = {
-      id: generateObjectId(),
-      name: `Default ${normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1)}`,
-      email: `default_${normalizedRole}@example.com`,
-      role: normalizedRole, // Always use normalized lowercase role
-      avatarUrl: `https://picsum.photos/seed/${normalizedRole}/100/100`
-    };
+    // Upsert a real user in the DB for this role (so protected API routes work)
+    const email = `default_${normalizedRole}@example.com`;
+    const name = `Default ${normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1)}`;
+    const avatarUrl = `https://picsum.photos/seed/${normalizedRole}/100/100`;
+    // Use the already-imported ObjectId and generateObjectId function
+    // (move the import and function to the top of the file if needed)
+    const user = await db.user.upsert({
+      where: { email },
+      update: {},
+      create: {
+        id: new ObjectId().toHexString(),
+        name,
+        email,
+        role: normalizedRoleUpper, // Always 'STUDENT', 'TEACHER', or 'ADMIN'
+        avatarUrl,
+        password: '', // or null if allowed
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatarUrl: true,
+      }
+    });
     
     // Create response with user data
-    const response = NextResponse.json(defaultUser);
+    const response = NextResponse.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role.toLowerCase(),
+      avatarUrl: user.avatarUrl
+    });
       // Set domain based on environment
     const isProduction = process.env.NODE_ENV === 'production';
     const domain = isProduction 
@@ -67,7 +85,7 @@ export async function POST(request: Request) {
     // Set cookies for authentication with improved settings for cross-environment compatibility
     response.cookies.set({
       name: 'userId',
-      value: defaultUser.id,
+      value: user.id,
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       httpOnly: true,
