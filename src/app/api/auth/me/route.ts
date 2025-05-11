@@ -87,16 +87,53 @@ export async function GET(request: Request) {
         avatarUrl: true
       }
     });
-      if (!user) {
+    if (!user) {
       // User ID in cookie doesn't match any user in DB
-      // Don't clear cookies here - just return null
-      // This prevents users from being logged out unexpectedly
-      console.log(`[auth/me] User not found for ID: ${userId}, but keeping cookies intact`);
-      
-      // Just return null without clearing cookies
-      return NextResponse.json(null);
+      // Try to recover: upsert a default user for the role in cookies (if present)
+      const userRole = cookies_map['userRole'];
+      let normalizedRoleUpper: 'STUDENT' | 'TEACHER' | 'ADMIN' = 'STUDENT';
+      if (userRole) {
+        const lowerRole = userRole.toLowerCase();
+        if (lowerRole === 'teacher') { normalizedRoleUpper = 'TEACHER'; }
+        else if (lowerRole === 'admin') { normalizedRoleUpper = 'ADMIN'; }
+      }
+      const email = `default_${normalizedRoleUpper.toLowerCase()}@example.com`;
+      const name = `Default ${normalizedRoleUpper.charAt(0) + normalizedRoleUpper.slice(1).toLowerCase()}`;
+      const avatarUrl = `https://picsum.photos/seed/${normalizedRoleUpper.toLowerCase()}/100/100`;
+      // Import ObjectId for new user creation (remove assignment if not used)
+      // const { ObjectId } = await import('bson');
+      const upsertedUser = await db.user.upsert({
+        where: { email },
+        update: {
+          name,
+          avatarUrl,
+          role: normalizedRoleUpper,
+        },
+        create: {
+          id: objectId,
+          name,
+          email,
+          role: normalizedRoleUpper,
+          avatarUrl,
+          password: '',
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatarUrl: true
+        }
+      });
+      return NextResponse.json({
+        id: upsertedUser.id,
+        name: upsertedUser.name,
+        email: upsertedUser.email,
+        role: upsertedUser.role.toLowerCase(),
+        avatarUrl: upsertedUser.avatarUrl
+      });
     }
-      // Return user data
+    // Return user data
     const response = NextResponse.json({
       id: user.id,
       name: user.name,
