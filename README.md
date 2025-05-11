@@ -51,10 +51,6 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### Deployed Version
-
-You can also access the deployed version of Miftah at:
-[https://miftah-eight.vercel.app/](https://miftah-eight.vercel.app/)
 
 ## Authentication
 
