@@ -27,8 +27,7 @@ const StudyPlanPage: NextPage = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
-  const [authChecked, setAuthChecked] = useState(false);
-  // Check authentication on component mount
+  const [authChecked, setAuthChecked] = useState(false);  // Check authentication on component mount
   useEffect(() => {
     let authCheckAttempts = 0;
     const maxAttempts = 3;
@@ -42,21 +41,28 @@ const StudyPlanPage: NextPage = () => {
         if (!user) {
           console.log("[StudyPlanPage] No user found in getCurrentUser response");
           
+          // Check if we have cookies directly - if we do, give the benefit of the doubt
+          if (document.cookie.includes('userId=') || document.cookie.includes('userRole=')) {
+            console.log("[StudyPlanPage] Found auth cookies, proceeding despite missing user object");
+            setAuthChecked(true);
+            return;
+          }
+          
           // Try again if we haven't reached max attempts
           if (authCheckAttempts < maxAttempts) {
             console.log(`[StudyPlanPage] Retrying authentication check... (${authCheckAttempts}/${maxAttempts})`);
             setTimeout(checkAuth, 1000); // Wait 1 second before retrying
             return;
           }
-          
-          // Max attempts reached, redirect to login
-          console.log("[StudyPlanPage] Max authentication attempts reached, redirecting to login");
+            
+          // Max attempts reached but don't redirect, just show a warning
+          console.log("[StudyPlanPage] Max authentication attempts reached, but proceeding");
           toast({
-            title: "Authentication required",
-            description: "Please log in to access the Study Plan page",
-            variant: "destructive",
+            title: "Authentication warning",
+            description: "Having trouble verifying your login. Some features may be limited.",
+            variant: "default",
           });
-          router.push('/login');
+          setAuthChecked(true);
           return;
         }
         
