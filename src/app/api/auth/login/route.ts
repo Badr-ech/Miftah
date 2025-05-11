@@ -103,8 +103,14 @@ export async function POST(request: Request) {
       const domain = isProduction 
         ? (process.env.NEXT_PUBLIC_APP_DOMAIN || undefined) 
         : undefined;
+        
+      // Remove www prefix if present for better cookie compatibility
+      const domainWithoutWww = domain?.replace(/^www\./, '') || undefined;
       
-      console.log(`[auth/login] Setting cookies for: ${email}, environment: ${process.env.NODE_ENV}, domain: ${domain || 'default'}`);
+      // Get host for debugging
+      const host = request.headers.get('host') || 'unknown-host';
+      console.log(`[auth/login] Host: ${host}, Environment: ${process.env.NODE_ENV}, Using domain: ${domainWithoutWww || 'default'}`);
+      console.log(`[auth/login] Setting cookies for: ${email}, userId: ${user.id}, userRole: ${user.role.toLowerCase()}`);
       
       // Then update both cookie sets to include domain
       response.cookies.set({
@@ -115,7 +121,7 @@ export async function POST(request: Request) {
         httpOnly: true,
         sameSite: 'lax',
         secure: isProduction,
-        domain: domain,  // Add this
+        domain: domainWithoutWww  // Use domain without www prefix
       });
       
       response.cookies.set({
@@ -126,7 +132,7 @@ export async function POST(request: Request) {
         httpOnly: true,
         sameSite: 'lax',
         secure: isProduction,
-        domain: domain,  // Add this
+        domain: domainWithoutWww  // Use domain without www prefix
       });
       
       return response;
