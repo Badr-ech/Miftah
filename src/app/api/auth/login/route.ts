@@ -98,7 +98,15 @@ export async function POST(request: Request) {
         avatarUrl: user.avatarUrl
       });
       
-      // Set cookies for authentication
+            // After creating response but before setting cookies
+      const isProduction = process.env.NODE_ENV === 'production';
+      const domain = isProduction 
+        ? (process.env.NEXT_PUBLIC_APP_DOMAIN || undefined) 
+        : undefined;
+      
+      console.log(`[auth/login] Setting cookies for: ${email}, environment: ${process.env.NODE_ENV}, domain: ${domain || 'default'}`);
+      
+      // Then update both cookie sets to include domain
       response.cookies.set({
         name: 'userId',
         value: user.id,
@@ -106,7 +114,8 @@ export async function POST(request: Request) {
         maxAge: 60 * 60 * 24 * 7, // 7 days
         httpOnly: true,
         sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
+        secure: isProduction,
+        domain: domain,  // Add this
       });
       
       response.cookies.set({
@@ -116,7 +125,8 @@ export async function POST(request: Request) {
         maxAge: 60 * 60 * 24 * 7, // 7 days
         httpOnly: true,
         sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
+        secure: isProduction,
+        domain: domain,  // Add this
       });
       
       return response;
