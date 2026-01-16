@@ -11,7 +11,7 @@ Miftah is built using Next.js with TypeScript and leverages a robust tech stack 
 ### For Students
 - **Course Access**: Browse and enroll in available courses
 - **Progress Tracking**: Monitor learning progress across all enrolled courses
-- **Study Plans**: AI-generated personalized study plans to optimize learning
+- **Study Plans**: AI generated personalized study plans to optimize learning
 - **Assignments**: Submit and track assignments for each course
 
 ### For Teachers
